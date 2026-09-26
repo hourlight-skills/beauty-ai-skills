@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>預約須知體檢＋放鳥損失試算｜美業 AI 技能包</title>
+<style>
+:root{--bg:#F0EEE9;--card:#fff;--ink:#3D3835;--mute:#6E675F;--rose:#7D4351;--teal:#007B7F;--orange:#E88A2C;--pink:#FFCCCC;--line:#DDD6CE;
+  --r:#C0392B;--rbg:#FDE2E0;--y:#8A6D00;--ybg:#FFF5C2}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.7}
+.wrap{max-width:900px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:1.6rem;margin:0 0 4px;color:var(--rose)}
+h2{font-size:1.1rem;margin:0 0 10px;color:var(--teal)}
+.sub{color:var(--mute);margin:0 0 16px}
+.card{background:var(--card);border-radius:18px;padding:20px;box-shadow:0 2px 10px rgba(125,67,81,.08);margin-bottom:18px}
+.note{color:var(--mute);font-size:.88rem}
+.info{background:#FFF7EF;border-left:5px solid var(--orange);border-radius:8px;padding:10px 14px;font-size:.92rem;margin:0 0 12px}
+textarea{width:100%;min-height:180px;border:2px solid var(--line);border-radius:12px;padding:12px;font:inherit;font-size:16px;resize:vertical;background:#FFFCFA}
+textarea:focus,input:focus{outline:none;border-color:var(--teal)}
+label{display:block;font-size:.9rem;font-weight:700}
+input{display:block;width:100%;margin-top:2px;font:inherit;font-weight:400;padding:8px 10px;border:2px solid var(--line);border-radius:10px;background:#FFFCFA;font-size:16px;min-height:44px}
+input.err{border-color:var(--r);background:var(--rbg)}
+.grid{display:grid;grid-template-columns:1fr;gap:10px}
+@media (min-width:640px){.grid.g3{grid-template-columns:1fr 1fr 1fr}.grid.g2{grid-template-columns:1fr 1fr}}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}
+button,a.btn{font:inherit;font-weight:700;border:0;border-radius:999px;padding:10px 20px;cursor:pointer;min-height:44px;text-decoration:none;display:inline-flex;align-items:center}
+.primary{background:var(--rose);color:#fff}
+.ghost{background:#fff;color:var(--teal);border:2px solid var(--teal)}
+button:focus-visible,input:focus-visible,textarea:focus-visible,a:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+.sum{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.pill{border-radius:999px;padding:4px 14px;font-weight:700;font-size:.95rem}
+.pr{background:var(--rbg);color:var(--r)}.py{background:var(--ybg);color:var(--y)}.pn{background:#EFEDEA;color:var(--ink);font-weight:500}
+#marked{white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;background:#FFFCFA;border-radius:12px;padding:14px;border:1px dashed var(--line);max-height:420px;overflow-y:auto}
+mark{border-radius:4px;padding:0 2px}
+mark.r{background:var(--rbg);color:var(--r);font-weight:700}
+mark.y{background:var(--ybg);color:var(--y)}
+.hit{border:2px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:12px}
+.hit.r{border-color:#E9B4AE}.hit.y{border-color:#EADB8F}
+.hit h3{margin:0 0 4px;font-size:1rem}
+.hit .found{font-size:.85rem;color:var(--mute);overflow-wrap:anywhere}
+.hit .laws{font-size:.85rem;margin-top:4px}
+.hit .laws a{color:var(--teal);margin-right:10px;display:inline-block}
+.hit .bqq{font-size:.88rem;background:#EAF6F5;border-left:4px solid var(--teal);border-radius:6px;padding:6px 10px;margin:6px 0 0}
+ul.bq{padding-left:20px;margin:6px 0}ul.bq li{margin-bottom:8px;overflow-wrap:anywhere}
+.big{font-size:1.5rem;font-weight:900;color:var(--rose)}
+.bad{color:var(--r);font-weight:700}
+#draft{white-space:pre-wrap;word-break:break-word;background:#FFFCFA;border-radius:12px;padding:14px;border:1px solid var(--line);margin:0;font:inherit}
+footer{color:var(--mute);font-size:.8rem;margin-top:24px;overflow-wrap:anywhere}
+footer a{color:var(--teal)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>預約須知體檢＋放鳥損失試算</h1>
+  <p class="sub">客人放鳥、臨時取消，空出來的時段補不回來；想在須知裡寫清楚，又怕寫得太硬。這一頁做兩件事：①把妳現在的預約須知貼進來，標出常見會被質疑的寫法；②算算放鳥一年大約少了多少收入，再試寫一段「照比例退還」的須知草稿。文字只在妳的瀏覽器裡處理，不會上傳，也不會存下來。</p>
+
+  <div class="card">
+    <h2>① 預約須知體檢</h2>
+    <p class="info">這是用字面規則找「常見會被質疑的寫法」，<b>不是法律意見</b>。一段條款公不公平，要看整份內容、交易習慣和實際情況一起判斷（消費者保護法施行細則第 13 條）。拿不準的，請問縣市政府消保官或律師。<b>做美容服務的，預約須知也要對照衛福部〈美容定型化契約應記載及不得記載事項〉，原句整理在下面第 ④ 區。</b><b>請不要貼客人的姓名電話。</b></p>
+    <label for="txt">把妳現在的預約須知貼在這裡</label>
+    <textarea id="txt" maxlength="20000" placeholder="例：預約需付訂金 500 元，訂金一律不退。遲到 15 分鐘即沒收訂金……"></textarea>
+    <div class="row">
+      <button type="button" class="primary" id="go">幫我體檢</button>
+      <button type="button" class="ghost" id="ex">放一段例子</button>
+      <span class="note" id="len"></span>
+    </div>
+  </div>
+
+  <div class="card" id="out" hidden aria-live="polite">
+    <div class="sum" id="sum"></div>
+    <div id="marked"></div>
+    <div id="hits" style="margin-top:14px"></div>
+  </div>
+
+  <div class="card">
+    <h2>② 放鳥損失試算</h2>
+    <p class="note">「放鳥」這裡指：沒來也沒說，或臨時取消、空檔補不回來的預約。</p>
+    <div class="grid g3">
+      <label>每月大約幾個預約<input id="bk" type="text" inputmode="decimal" placeholder="例：80"></label>
+      <label>放鳥＋臨時取消的比例（%）<input id="rate" type="text" inputmode="decimal" placeholder="例：10"></label>
+      <label>平均客單價（元）<input id="price" type="text" inputmode="decimal" placeholder="例：1500"></label>
+    </div>
+    <div id="calc" style="margin-top:12px"><p class="note">填好三格就會算。</p></div>
+    <p class="note">算法：每月預約數 × 比例 × 客單價 × 12 個月。這是把空掉的時段都當作補不回來的算法；如果妳常能用候補客人補上，實際損失會比較少。</p>
+  </div>
+
+  <div class="card">
+    <h2>③ 試寫「照比例退還」的須知草稿</h2>
+    <p class="note">這裡只產生「退多少、怎麼改期」的寫法，<b>不產生不退、沒收、空檔費這類條款</b>。數字都可以改，產生後請自己讀一遍再用。</p>
+    <div class="grid g2">
+      <label>提前幾小時以上取消，訂金全額退還<input id="h1" type="text" inputmode="numeric" value="48"></label>
+      <label>在那之後才取消或沒到，訂金退還幾 %（1–100）<input id="p2" type="text" inputmode="numeric" placeholder="請自己填，沒有預設值"></label>
+      <label>提前幾小時以上說，可以免費改期<input id="h3" type="text" inputmode="numeric" value="24"></label>
+      <label>每次預約可以改期幾次（1–10）<input id="n3" type="text" inputmode="numeric" value="1"></label>
+    </div>
+    <div class="row">
+      <button type="button" class="primary" id="mk">產生草稿</button>
+      <button type="button" class="ghost" id="cp" hidden>複製草稿</button>
+      <span class="note" id="dmsg"></span>
+    </div>
+    <p class="bad" id="derr" hidden></p>
+    <p class="info" id="dwarn"><b>美容服務適用〈美容定型化契約應記載及不得記載事項〉，消費者取消時能扣多少要照那份規定與個案，這份草稿只是整理格式，請先對照原文或問消保官。</b>原文：<a href="https://mohwlaw.mohw.gov.tw/FLAW/FLAWDAT0202.aspx?lsid=FL100463" target="_blank" rel="noopener" style="color:var(--teal)">衛福部法規檢索</a>，重點原句在下面第 ④ 區。退還比例沒有預設值，因為這個數字要妳對照規定自己決定。</p>
+    <pre id="draft" hidden></pre>
+  </div>
+
+  <div class="card" id="beauty">
+    <h2>④ 美容服務要另外對照的官方規定</h2>
+    <p>衛福部〈<a href="https://mohwlaw.mohw.gov.tw/FLAW/FLAWDAT0202.aspx?lsid=FL100463" target="_blank" rel="noopener" style="color:var(--teal);font-weight:700">美容定型化契約應記載及不得記載事項</a>〉（衛福部法規檢索顯示日期：民國 112 年 01 月 06 日）。下面只抄原句，不下結論；妳的服務算不算、單次預約的訂金怎麼套用，請問縣市消保官或律師。</p>
+    <ul class="bq">
+      <li><b>適用範圍（前言）</b>：「本契約所稱美容，指除瘦身美容以外之從事化粧、臉部美容等之行為。」第三點列的項目有「化粧」「臉部美容」「肌膚保養」「身體油壓」「脫毛」「美指（甲）」「美容諮詢」「其他」。</li>
+      <li><b>金額不到一萬也適用（第三點第二項）</b>：「消費總金額為新臺幣一萬元以上者，應簽訂書面契約，未滿新臺幣一萬元者，仍有本契約之適用，業者可以公告、公示方式揭露契約內容方式進行。」</li>
+      <li><b>預約（第十八點）</b>：「消費者受領美容服務，應於事先約定預約方式，如未約定則為不需預約。」「消費者如無法依約定時間參加美容服務，應依約定方式於一定時間內事先通知業者。」「消費者遲延受領美容服務，業者因此所增加之費用，由消費者負擔。」</li>
+      <li><b>實施前消費者解除（第十三點）</b>：「企業經營者應於解約日後______日內（不得逾十五日）將已收取之費用扣除解約手續費後退還於消費者。」「前項所稱解約手續費，指本契約總費用百分之______（但其最高金額不得逾本契約總費用百分之五）。若未約定解約手續費之金額時，企業經營者不得扣除解約手續費。」（原文這一點寫的是「繼續性美容服務實施前或簽約當日即有償接受服務」的情形）</li>
+      <li><b>實施後消費者終止（第十四點）</b>：解約手續費「指本契約總費用扣除已接受服務之費用，及已提領並拆封之附屬商品價額後之剩餘金額百分之______（但其最高金額不得逾百分之十）。若未約定解約手續費之金額時，企業經營者不得扣除解約手續費。」</li>
+      <li><b>店家的原因（第十五點）</b>：「企業經營者應依第十三點或前點之計算規定退費予消費者，但不得扣除解約手續費；並應額外賠償予消費者依第十三點或前點規定之解約手續費。」</li>
+      <li><b>雙方都無法控制（第十六點）</b>：「因天災、戰亂、政府法令、罷工等不可抗力或不可歸責於企業經營者之事由，致不能履行債務。」「前項情形，企業經營者應依第十三點或第十四點規定退還費用予消費者。但不得扣除解約手續費。」</li>
+      <li><b>不得記載事項（節錄與預約須知相關的）</b>：一、「不得約定消費者違反本契約時消費者應支付違約金或拋棄已支付之費用。」三、「不得約定免除或限制企業經營者依消費者保護法規定所應負之責任。」四、「不得約定「貨物出門，概不退換」等概括免責條款。」六、「不得約定企業經營者於訂約後得片面變更契約內容。」十、「不得約定消費者未於一定期限接受繼續性美容服務時，即不得再行接受。」十一、「不得為其他違反法律強制、禁止規定或欺罔、顯失公平之約定或行為。」</li>
+    </ul>
+    <p class="note">美睫、美髮、紋繡、瘦身美容等項目，原文前言與項目清單沒有逐一點名（瘦身美容明寫排除），適不適用、要看哪一份規定，請問縣市消保官。</p>
+  </div>
+
+  <div class="card">
+    <h2>要寫提醒訊息？</h2>
+    <p>前一天提醒、改期、臨時取消、沒來隔天的關心訊息，可以用 <a href="one-click.html" style="color:var(--teal);font-weight:700">一鍵指令產生器</a> 裡的「預約訊息」產生，再貼到 LINE。</p>
+  </div>
+
+  <footer>
+    美業 AI 技能包 v0.5.0｜美業小工具｜<a href="index.html">回工具首頁</a>｜<a href="https://github.com/hourlight-skills/beauty-ai-skills/issues" target="_blank" rel="noopener">回報問題</a><br>
+    資料查核日 2026-09-26｜官方條文（全國法規資料庫）：
+    <a href="https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=J0170001&amp;flno=11" target="_blank" rel="noopener">消費者保護法第 11 條</a>、
+    <a href="https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=J0170001&amp;flno=12" target="_blank" rel="noopener">第 12 條</a>、
+    <a href="https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=J0170002&amp;flno=13" target="_blank" rel="noopener">消費者保護法施行細則第 13 條</a>、
+    <a href="https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=J0170002&amp;flno=14" target="_blank" rel="noopener">第 14 條</a>、
+    <a href="https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=B0000001&amp;flno=247-1" target="_blank" rel="noopener">民法第 247-1 條</a>、
+    <a href="https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=B0000001&amp;flno=249" target="_blank" rel="noopener">第 249 條</a>、
+    <a href="https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=B0000001&amp;flno=252" target="_blank" rel="noopener">第 252 條</a>；
+    衛福部法規檢索：<a href="https://mohwlaw.mohw.gov.tw/FLAW/FLAWDAT0202.aspx?lsid=FL100463" target="_blank" rel="noopener">美容定型化契約應記載及不得記載事項</a>
+  </footer>
+</div>
+<script>
+(function(){
+var $=function(id){return document.getElementById(id);};
+function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;}
+var MAX=20000;
+var LAW={
+  C11:['消保法第 11 條','https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=J0170001&flno=11'],
+  C12:['消保法第 12 條','https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=J0170001&flno=12'],
+  R14:['消保法施行細則第 14 條','https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=J0170002&flno=14'],
+  M247:['民法第 247-1 條','https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=B0000001&flno=247-1'],
+  M249:['民法第 249 條','https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=B0000001&flno=249'],
+  M252:['民法第 252 條','https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=B0000001&flno=252'],
+  BT:['美容定型化契約應記載及不得記載事項','https://mohwlaw.mohw.gov.tw/FLAW/FLAWDAT0202.aspx?lsid=FL100463']
+};
+// 美容服務另外要對照的原句（衛福部〈美容定型化契約應記載及不得記載事項〉，只引原文）
+var BN1='不得記載事項第一點：「不得約定消費者違反本契約時消費者應支付違約金或拋棄已支付之費用。」';
+var BQ={
+  late:[BN1],forfeit:[BN1],fee:[BN1],
+  norefund:[BN1,'不得記載事項第四點：「不得約定「貨物出門，概不退換」等概括免責條款。」'],
+  expire:['不得記載事項第十點：「不得約定消費者未於一定期限接受繼續性美容服務時，即不得再行接受。」'],
+  noliab:['不得記載事項第三點：「不得約定免除或限制企業經營者依消費者保護法規定所應負之責任。」','不得記載事項第四點：「不得約定「貨物出門，概不退換」等概括免責條款。」'],
+  interp:['不得記載事項第六點：「不得約定企業經營者於訂約後得片面變更契約內容。」'],
+  anyreason:['應記載事項第十六點：因「天災、戰亂、政府法令、罷工等不可抗力或不可歸責於企業經營者之事由」等情形，「企業經營者應依第十三點或第十四點規定退還費用予消費者。但不得扣除解約手續費。」'],
+  deposit:['應記載事項第十八點：「消費者如無法依約定時間參加美容服務，應依約定方式於一定時間內事先通知業者。」','應記載事項第十三點：解約手續費「最高金額不得逾本契約總費用百分之五」「若未約定解約手續費之金額時，企業經營者不得扣除解約手續費。」（原文寫的是繼續性美容服務實施前的情形）']
+};
+// [代號, 燈號 r＝要再想想／y＝看上下文, 規則, 名稱, 為什麼要再想想, 條文]
+var RULES=[
+  ['late','r',/遲到[^。！!\n]{0,20}?(?:沒收|不退|不予退|視同(?:放棄|取消|爽約|未到)|作廢|取消預約)/g,'遲到就沒收',
+   '遲到幾分鐘，和整個沒來，損失不一樣。遲到一下就全部拿走，可能被認為是「客人違約時要負擔顯不相當的賠償」。可以想想改成：縮短服務時間，或改期。',['R14','C12']],
+  ['norefund','r',/(?:一律|一概|概|恕|均|皆|全數|全部)\s*不(?:予|得)?\s*(?:退|返還)(?:費|款|還|訂金|定金)?|(?:訂金|定金|費用|款項|預約金)\s*(?:一律|概|恕|均|皆)?\s*不(?:予|得)?\s*(?:退|返還)(?:還|費|款)?|不接受退(?:費|款)/g,'一律不退',
+   '寫成「一律不退」，連店家自己取消、颱風停班這種雙方都控制不了的情況也包進去了。民法第 249 條寫，定金在雙方都無法控制而不能履行時，應該返還（除非另有約定）；約定成一律不退，可能被認為對客人顯失公平。',['C12','M249','R14']],
+  ['forfeit','r',/沒收/g,'沒收',
+   '「沒收」是把客人付的錢整筆拿走。收多少才算相當，要看妳實際損失多少；差太多，可能被認為賠償顯不相當。',['M249','M252','R14']],
+  ['fee','r',/空檔費|空堂費|時段費|損失費|違約金|罰款|罰金|賠償金/g,'空檔費、違約金',
+   '另外向客人收一筆錢時，金額如果比實際損失高很多，民法第 252 條寫「約定之違約金額過高者，法院得減至相當之數額」。先算算這筆錢跟妳真正少賺的差多少。',['M252','R14','C12']],
+  ['expire','r',/(?:逾期|過期|到期|期滿)\s*(?:即|就|則|視同)?\s*(?:作廢|失效|無效|不退|不候|視同放棄|自動放棄)|視同放棄|自動放棄/g,'逾期作廢',
+   '過了某個日期，客人就失去已付的錢或權利，屬於「使對方拋棄權利或限制行使權利」的寫法，民法第 247-1 條寫這類約定按情形顯失公平的部分無效。',['M247','C12']],
+  ['anyreason','r',/(?:不論|無論|不管|不問)\s*(?:任何|什麼|何種)?\s*(?:原因|理由|因素|情況|情形)|任何理由|任何原因/g,'不論任何原因',
+   '「任何原因」把店家自己的原因、天災、停班停課都包進去了。消保法施行細則第 14 條把「消費者應負擔非其所能控制之危險」列為違反平等互惠。',['R14','M249']],
+  ['noliab','r',/概不負責|恕不負責|不負(?:任何)?責任|後果自負|一切(?:責任|後果)\s*(?:由|自)[^。\n]{0,6}?(?:負責|承擔|負擔)/g,'概不負責',
+   '把店家的責任全部排除掉。民法第 247-1 條第 1 款講的就是「免除或減輕預定契約條款之當事人之責任」，按情形顯失公平的部分無效。',['M247','C12']],
+  ['interp','y',/最終解釋權|保留(?:修改|變更|更改|調整)(?:之|的)?權利|(?:本店|本工作室|店家)有權(?:隨時)?(?:修改|變更|更改|取消)/g,'店家保留最終解釋權',
+   '消保法第 11 條寫，定型化契約條款有疑義時，應為有利於消費者的解釋。寫「最終解釋權在店家」和這個方向相反，客人看了也容易不舒服。',['C11']],
+  ['blacklist','y',/黑名單|永不(?:接待|服務|預約)|拒絕往來/g,'黑名單、永不接待',
+   '心情可以理解，但寫在須知裡，像在警告每一位客人。建議私下個別溝通，須知只寫改期與取消的方式。（這一條是溝通建議，不是法律分類。）',[]],
+  ['deposit','y',/訂金|定金|預付款|預約金/g,'有提到訂金',
+   '有收訂金，就把「什麼情況退、退多少、多久退、怎麼退」寫清楚。沒寫到的地方，民法第 249 條有預設的處理方式。',['M249']]
+];
+function check(t){
+  var all=[];
+  RULES.forEach(function(r,ri){var re=r[2],m;re.lastIndex=0;while((m=re.exec(t))){if(!m[0].length){re.lastIndex++;continue;}all.push({i:m.index,len:m[0].length,w:m[0],ri:ri});}});
+  // 先出現的優先；同位置長的優先；重疊的跳過
+  all.sort(function(a,b){return a.i-b.i||b.len-a.len||a.ri-b.ri;});
+  var out=[],end=-1;all.forEach(function(h){if(h.i>=end){out.push(h);end=h.i+h.len;}});
+  return out;
+}
+window.__check=check;
+function run(){
+  var t=$('txt').value.slice(0,MAX),sum=$('sum'),marked=$('marked'),box=$('hits');
+  sum.textContent='';marked.textContent='';box.textContent='';$('out').hidden=false;
+  if(!t.trim()){sum.appendChild(el('span','pill pn','先把預約須知貼進上面的框框'));marked.hidden=true;$('txt').focus();return;}
+  marked.hidden=false;
+  var hits=check(t),p=0;
+  hits.forEach(function(h){marked.appendChild(document.createTextNode(t.slice(p,h.i)));marked.appendChild(el('mark',RULES[h.ri][1],t.slice(h.i,h.i+h.len)));p=h.i+h.len;});
+  marked.appendChild(document.createTextNode(t.slice(p)));
+  var nr=hits.filter(function(h){return RULES[h.ri][1]==='r';}).length,ny=hits.length-nr;
+  if(!hits.length){sum.appendChild(el('span','pill pn','沒找到常見的高風險寫法，不代表沒問題。整份須知還是建議請縣市消保官或律師看過。'));return;}
+  sum.appendChild(el('span','pill pr','🔴 要再想想 '+nr+' 處'));sum.appendChild(el('span','pill py','🟡 看上下文 '+ny+' 處'));
+  RULES.forEach(function(r,ri){var hs=hits.filter(function(h){return h.ri===ri;});if(!hs.length)return;
+    var d=el('div','hit '+r[1]);d.setAttribute('data-rule',r[0]);
+    d.appendChild(el('h3','',(r[1]==='r'?'🔴 ':'🟡 ')+r[3]));
+    var seen={},ws=[];hs.forEach(function(h){if(!seen[h.w]){seen[h.w]=1;ws.push('「'+h.w+'」');}});
+    d.appendChild(el('div','found','妳寫的：'+ws.slice(0,5).join('、')+(ws.length>5?' 等 '+ws.length+' 種':'')+'（'+hs.length+' 處）'));
+    d.appendChild(el('p','',r[4]));
+    if(BQ[r[0]]){BQ[r[0]].forEach(function(q){d.appendChild(el('p','bqq','美容服務另外要對照〈美容定型化契約應記載及不得記載事項〉'+q));});}
+    var lk=r[5].concat(BQ[r[0]]?['BT']:[]);
+    if(lk.length){var lw=el('div','laws');lw.appendChild(document.createTextNode('原文：'));lk.forEach(function(k){var a=el('a','',LAW[k][0]);a.href=LAW[k][1];a.target='_blank';a.rel='noopener';lw.appendChild(a);});d.appendChild(lw);}
+    box.appendChild(d);});
+  box.appendChild(el('p','note','標出來的是「可能被認為顯失公平、要再確認」的寫法，不是結論。要不要改、怎麼改，建議請縣市消保官或律師看過整份須知。'));
+}
+$('go').onclick=run;
+$('ex').onclick=function(){$('txt').value='預約須知\n1. 預約需先付訂金 500 元，訂金一律不退。\n2. 遲到 15 分鐘即沒收訂金，視同放棄。\n3. 當天取消或未到，需另付空檔費 1,000 元。\n4. 不論任何原因取消，訂金逾期作廢。\n5. 施作後如有不適，本店概不負責。\n6. 本店保留最終解釋權。';run();};
+$('txt').oninput=function(){var n=$('txt').value.length;$('len').textContent=n>=MAX?'已到上限 '+MAX+' 字，後面的不會檢查':'';};
+
+// ── 放鳥損失試算 ──
+function num(id,min,max,intOnly){var i=$(id),s=i.value.trim().replace(/,/g,'');
+  if(s===''){i.classList.remove('err');return {empty:true};}
+  var ok=intOnly?/^\d+$/.test(s):/^\d+(\.\d+)?$/.test(s),v=ok?Number(s):NaN;
+  if(!ok||v<min||v>max){i.classList.add('err');return {err:true};}
+  i.classList.remove('err');return {v:v};}
+var fmt=function(n){return Math.round(n).toLocaleString('zh-TW');};
+function calc(){
+  var b=num('bk',0,100000),r=num('rate',0,100),p=num('price',0,10000000),c=$('calc');c.textContent='';
+  if(b.err||r.err||p.err){var m=[];if(b.err)m.push('每月預約數要填 0 到 100,000 的數字');if(r.err)m.push('比例要填 0 到 100 的數字');if(p.err)m.push('客單價要填 0 以上的數字');c.appendChild(el('p','bad',m.join('；')+'。'));return;}
+  if(b.empty||r.empty||p.empty){c.appendChild(el('p','note','填好三格就會算。'));return;}
+  var slots=b.v*r.v/100,month=slots*p.v,year=month*12,per1=b.v*0.01*p.v*12;
+  c.appendChild(el('div','big','一年大約少了 '+fmt(year)+' 元'));
+  c.appendChild(el('p','','每月大約 '+(Math.round(slots*10)/10).toLocaleString('zh-TW')+' 個時段空掉，約 '+fmt(month)+' 元。'));
+  c.appendChild(el('p','note','放鳥比例每降低 1 個百分點，一年大約可以少損失 '+fmt(per1)+' 元。'));
+  $('calc').setAttribute('data-year',String(Math.round(year)));
+}
+['bk','rate','price'].forEach(function(id){$(id).oninput=calc;});
+
+// ── 須知草稿（只寫退還比例與改期方式） ──
+var LAST='正式使用前，建議請消保官或律師看過。';
+function draft(){
+  var h1=num('h1',1,720,true),p2=num('p2',1,100,true),h3=num('h3',0,720,true),n3=num('n3',1,10,true),e=[];
+  if(h1.err||h1.empty)e.push('全額退還的時數要填 1 到 720 的整數');
+  if(p2.empty)e.push('退還比例沒有預設值，請對照〈美容定型化契約應記載及不得記載事項〉或問消保官後，自己填 1 到 100 的整數');
+  else if(p2.err)e.push('退還比例要填 1 到 100 的整數（這個工具不產生不退的寫法；想約定不退，請先問消保官或律師）');
+  if(h3.err||h3.empty)e.push('改期時數要填 0 到 720 的整數');
+  if(n3.err||n3.empty)e.push('改期次數要填 1 到 10 的整數');
+  var de=$('derr'),pre=$('draft');
+  if(e.length){de.textContent=e.join('；')+'。';de.hidden=false;pre.hidden=true;$('cp').hidden=true;return;}
+  de.hidden=true;
+  var L=['預約與取消說明'];
+  L.push('・需要取消的話，請在預約時間前 '+h1.v+' 小時以上告訴我們，已付的訂金全額退還。');
+  if(p2.v<100)L.push('・預約時間前 '+h1.v+' 小時內才取消，或當天沒有到，已付的訂金退還 '+p2.v+'%。');
+  else L.push('・預約時間前 '+h1.v+' 小時內才取消，或當天沒有到，已付的訂金一樣全額退還。');
+  L.push('・想改期的話，'+(h3.v>0?'請在預約時間前 '+h3.v+' 小時以上告訴我們，':'隨時告訴我們，')+'每次預約可以改期 '+n3.v+' 次，已付的訂金直接轉到新的時段。');
+  L.push('・如果是我們這邊的原因需要取消，我們會第一時間聯絡妳，一起討論退款或改期。');
+  L.push('・遇到天災、停班停課這類雙方都無法控制的情況，已付的訂金全額退還，或依妳的意願改期。');
+  L.push('・退款會在確認後幾天內用原付款方式退回（天數請自己填）。');
+  L.push('');L.push(LAST);
+  pre.textContent=L.join('\n');pre.hidden=false;$('cp').hidden=false;$('dmsg').textContent='';
+}
+$('mk').onclick=draft;
+$('cp').onclick=function(){var t=$('draft').textContent;
+  (navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(t):Promise.reject()).then(function(){$('dmsg').textContent='已複製。';},function(){
+    var r=document.createRange();r.selectNodeContents($('draft'));var s=getSelection();s.removeAllRanges();s.addRange(r);$('dmsg').textContent='已幫妳選取，請按 Ctrl＋C（手機長按）複製。';});};
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>營業稅起徵點對照｜美業 AI 技能包</title>
+<style>
+:root{--bg:#F0EEE9;--card:#fff;--ink:#3D3835;--mute:#6E675F;--rose:#7D4351;--teal:#007B7F;--orange:#E88A2C;--pink:#FFCCCC;--line:#DDD6CE}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.7}
+.wrap{max-width:980px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:1.6rem;margin:0 0 4px;color:var(--rose)}
+h2{font-size:1.05rem;margin:0 0 10px;color:var(--teal)}
+.sub{color:var(--mute);margin:0 0 16px}
+.card{background:var(--card);border-radius:18px;padding:20px;box-shadow:0 2px 10px rgba(125,67,81,.08);margin-bottom:18px}
+.note{color:var(--mute);font-size:.88rem}
+label{display:block;font-size:.85rem;font-weight:700}
+input[type=text],input[type=month]{display:block;width:100%;margin-top:2px;font:inherit;font-weight:400;padding:8px;border:2px solid var(--line);border-radius:10px;background:#FFFCFA;font-size:16px;min-height:44px}
+input:focus{outline:none;border-color:var(--teal)}
+input.err{border-color:#C0392B;background:#FDE2E0}
+.kinds{display:flex;gap:8px;flex-wrap:wrap}
+.kinds label{display:flex;align-items:center;gap:8px;border:2px solid var(--line);border-radius:999px;padding:8px 16px;min-height:44px;cursor:pointer;font-weight:700}
+.kinds input{width:20px;height:20px;margin:0}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px}
+button{font:inherit;font-weight:700;border:0;border-radius:999px;padding:10px 20px;cursor:pointer;min-height:44px}
+.primary{background:var(--rose);color:#fff}
+.ghost{background:#fff;color:var(--teal);border:2px solid var(--teal)}
+.big{font-size:1.3rem;font-weight:900;color:var(--rose)}
+.bad{color:#C0392B;font-weight:700}.hitc{color:var(--rose);font-weight:700}.ok{color:var(--teal);font-weight:700}.warn{color:#9A5B12;font-weight:700}
+.months{display:grid;gap:10px}
+.mrow{border:2px solid var(--line);border-radius:14px;padding:10px 12px;display:grid;grid-template-columns:1fr;gap:6px}
+@media (min-width:760px){.mrow{grid-template-columns:110px 1fr 1fr 2fr;align-items:center}}
+.mrow .mlabel{font-weight:900;color:var(--rose)}
+.mrow .res{font-size:.9rem}
+.mrow[data-status="hit"]{border-color:var(--rose)}
+.mrow[data-status="ask"]{border-color:var(--orange)}
+.hide{display:none!important}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+th{background:#FAF7F3}
+.tbl{overflow-x:auto}
+blockquote{margin:8px 0;padding:8px 12px;border-left:4px solid var(--teal);background:#F6FAFA;font-size:.9rem}
+.final{border:2px solid var(--rose);border-radius:14px;padding:12px;font-weight:700}
+button:focus-visible,input:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+footer{color:var(--mute);font-size:.8rem;margin-top:24px}
+footer a,.card a{color:var(--teal)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>營業稅起徵點對照</h1>
+  <p class="sub">填最近 12 個月每個月賣了多少，逐月對照財政部公告的「起徵點」。<b>這個工具只做對照，不告訴妳要不要登記、要不要繳稅。</b>資料不會存下來、不會上傳，關掉頁面就清空。</p>
+
+  <div class="card">
+    <h2>① 妳賣的是什麼？</h2>
+    <div class="kinds" role="radiogroup" aria-label="賣的是什麼">
+      <label><input type="radio" name="kind" id="kSvc" value="svc" checked>賣服務（勞務）</label>
+      <label><input type="radio" name="kind" id="kGds" value="gds">賣東西（貨物）</label>
+      <label><input type="radio" name="kind" id="kBoth" value="both">兩種都有</label>
+    </div>
+    <details style="margin-top:10px">
+      <summary>財政部怎麼分這兩類（點開看原文）</summary>
+      <p class="note">財政部〈小規模營業人營業稅起徵點〉（113 年 12 月 12 日修正，114 年 1 月 1 日生效）原文：</p>
+      <blockquote>二、買賣業、製造業、手工業、新聞業、出版業、農林業、畜牧業、水產業、礦冶業、包作業、印刷業、公用事業、娛樂業、運輸業、照相業及一般飲食業等業別之起徵點為每月銷售額新臺幣十萬元。</blockquote>
+      <blockquote>三、裝潢業、廣告業、修理業、加工業、旅宿業、理髮業、沐浴業、勞務承攬業、倉庫業、租賃業、代辦業、行紀業、技術與設計業及公證業等業別之起徵點為每月銷售額新臺幣五萬元。</blockquote>
+      <p class="note">美甲、美睫、美容這幾個字沒有逐字寫在上面兩點裡。妳屬於哪一類，<b>這一點請問所轄國稅局</b>。</p>
+    </details>
+  </div>
+
+  <div class="card">
+    <h2>② 每個月賣了多少（元）</h2>
+    <p class="note">填「銷售額」（也就是每個月收進來的營業額），整數就好，可以有逗號。只知道幾個月就填幾個月，空著的月份會跳過。</p>
+    <label style="max-width:260px">最近一個月是哪個月<input type="month" id="end" min="2007-01"></label>
+    <p id="endMsg" class="bad" hidden></p>
+    <div class="row">
+      <button type="button" class="ghost" id="ex">放一組例子</button>
+      <button type="button" class="ghost" id="clear">全部清空</button>
+    </div>
+    <div id="months" class="months" style="margin-top:12px"></div>
+  </div>
+
+  <div class="card">
+    <h2>③ 對照結果</h2>
+    <div id="sum"><p class="note">填了數字就會出現。</p></div>
+    <p class="note">官方看的是國稅局「查定」的銷售額。這裡用的是妳自己填的數字，只能拿來對照，不等於國稅局的認定。</p>
+  </div>
+
+  <div class="card">
+    <h2>④ 起徵點是什麼、兩種都賣怎麼算</h2>
+    <p>財政部新聞稿（114 年 1 月 1 日起的新門檻）：</p>
+    <blockquote>自114年1月1日起，買賣業等銷售貨物業別起徵點調高至每月銷售額新臺幣（下同）10萬元；裝潢業等銷售勞務業別起徵點調高至每月銷售額5萬元。</blockquote>
+    <blockquote>小規模營業人其每月銷售額如未達該起徵點者，免繳納營業稅。</blockquote>
+    <p><b>兩種都賣</b>：財政部的令有寫算法，本工具就是照這一條算：</p>
+    <blockquote>四、營業人如兼營前二點所列業別之營業，其各點所列業別銷售額占各該點起徵點之百分比合計數達百分之一百者，應予課徵……</blockquote>
+    <p class="note">白話：「貨物銷售額 ÷ 10 萬」加上「勞務銷售額 ÷ 5 萬」，合計到 100% 就算達到。114 年以前的月份用舊門檻（8 萬／4 萬）照同樣方式算；但舊的令文字寫「超過百分之一百」、公式卻寫「≧」，所以<b>舊月份剛好 100% 的那一格不自動判斷</b>，請問國稅局。</p>
+  </div>
+
+  <div class="card">
+    <h2>⑤「起徵點」和「要不要辦登記」是兩件事</h2>
+    <p>財政部主管法規查詢系統裡查得到這幾則函釋，官方是分開寫的：</p>
+    <blockquote>個人利用自用住宅從事理髮、燙髮、美容、洋裁等家庭手工藝副業，如未具備營業牌號，亦未僱用人員，及其每月銷售額未達營業稅起徵點者，准予免辦營業登記。<br><span class="note">（財政部 78 年 4 月 6 日 台財稅第781143103號）</span></blockquote>
+    <blockquote>（利用自宅從事早餐店等）本案係屬銷售貨物行為，與本部78/04/06台財稅第781143103號函規範之「個人手工藝」性質並不相同，不宜比照辦理。<br><span class="note">（財政部 93 年 1 月 16 日 台財稅字第0920457998號，標題：利用自宅從事早餐店等縱未具備牌號及僱用員工仍應辦營業登記）</span></blockquote>
+    <blockquote>未辦營業登記擅自營業，其每月銷售額未達起徵點者，除依營業稅法第45條規定處罰外，無同法第51條規定漏稅罰之適用。<br><span class="note">（財政部 77 年 12 月 10 日 台財稅第770602165號）</span></blockquote>
+    <p>這幾則的年代比較早，而且每一則都有自己的條件。<b>妳要不要辦登記、上面哪一則適不適用妳，這一點請問所轄國稅局。</b>本工具不替妳判斷。</p>
+  </div>
+
+  <div class="card">
+    <h2>⑥ 網路上常見的舊數字</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>舊數字</th><th>官方出處</th><th>現在</th></tr></thead>
+      <tbody>
+        <tr><td>賣東西（貨物）每月 8 萬元</td><td>財政部 95 年 12 月 22 日修正，自 96 年 1 月 1 日施行</td><td>114 年 1 月 1 日起改為每月 10 萬元</td></tr>
+        <tr><td>賣服務（勞務）每月 4 萬元</td><td>同上</td><td>114 年 1 月 1 日起改為每月 5 萬元</td></tr>
+      </tbody>
+    </table></div>
+    <p class="note">所以 2024 年 12 月（113 年）以前的文章寫 8 萬／4 萬，在當時是對的，只是現在舊了。網路上其他的數字如果不在這張表上，我們在財政部的法規沿革裡找不到出處，請以財政部公告為準。</p>
+  </div>
+
+  <div class="card">
+    <p class="final" id="finalLine">這只是對照官方門檻，不是稅務意見；要不要登記、怎麼報稅，以所轄國稅局認定為準（電話 0800-000-321）</p>
+    <p class="note">國稅局網站寫的是「國地稅免付費電話：0800-000-321（稅務問題，限辦公時間提供服務）」，手機請撥各國稅局的市話號碼。</p>
+  </div>
+
+  <footer>
+    美業 AI 技能包 v0.5.0｜通用小工具｜<a href="index.html">回工具首頁</a>｜<a href="https://github.com/hourlight-skills/beauty-ai-skills/issues" target="_blank" rel="noopener">回報問題</a><br>
+    資料查核日 2026-09-26｜官方來源：
+    <a href="https://www.mof.gov.tw/singlehtml/384fb3077bb349ea973e7fc6f13b6974?cntId=4e040848cb7044ce8d2c8540bd628f5f" target="_blank" rel="noopener">財政部新聞稿（2024-12-12）</a>、
+    <a href="https://law-out.mof.gov.tw/LawContent.aspx?id=FL006090" target="_blank" rel="noopener">小規模營業人營業稅起徵點（現行）</a>、
+    <a href="https://law-out.mof.gov.tw/LawContentHistory.aspx?hid=43343&amp;id=FL006090" target="_blank" rel="noopener">同上（95 年版）</a>、
+    <a href="https://law-out.mof.gov.tw/LawContent.aspx?id=GL006517" target="_blank" rel="noopener">78 年函</a>、
+    <a href="https://law-out.mof.gov.tw/LawContent.aspx?id=GL006360" target="_blank" rel="noopener">93 年函</a>、
+    <a href="https://law-out.mof.gov.tw/LawContent.aspx?id=GL007629" target="_blank" rel="noopener">77 年函</a>、
+    <a href="https://www.ntbt.gov.tw/" target="_blank" rel="noopener">臺北國稅局（電話）</a>
+  </footer>
+</div>
+<script>
+(function(){
+// 門檻：新令 114-01-01（2025-01）起；95 年令自 96-01-01（2007-01）施行到 113 年底。2007 年以前本工具不收。
+var NEW_FROM='2025-01', OLD_FROM='2007-01';
+var RULES={'new':{g:100000,s:50000,name:'114 年起'},'old':{g:80000,s:40000,name:'96～113 年'}};
+var MAX_DIGITS=9;
+var $=function(id){return document.getElementById(id);};
+function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;}
+function fmt(n){return n.toLocaleString('zh-TW');}
+function ymOf(d){return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2);}
+function addMonths(ym,k){var p=ym.split('-');var d=new Date(+p[0],+p[1]-1+k,1);return ymOf(d);}
+function nowYM(){return ymOf(new Date());}
+function ruleOf(ym){if(ym>=NEW_FROM)return 'new';if(ym>=OLD_FROM)return 'old';return null;}
+function label(ym){var p=ym.split('-');return p[0]+' 年 '+(+p[1])+' 月';}
+function kind(){var r=document.querySelector('input[name=kind]:checked');return r?r.value:'svc';}
+// 讀一格：''＝沒填；NaN＝格式錯；-1＝太大；其餘＝整數
+function parse(v){v=String(v||'').replace(/[０-９]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-65248);}).replace(/[,，\s]/g,'');
+  if(v==='')return '';if(!/^\d+$/.test(v))return NaN;if(v.replace(/^0+/,'').length>MAX_DIGITS)return -1;return Number(v);}
+var store={};   // 只在這一頁記著，換月份時保留已填的數字；不寫進瀏覽器儲存
+var rows=[];
+function build(){
+  rows.forEach(function(r){store[r.ym]={s:r.s.value,g:r.g.value};});
+  var box=$('months');box.textContent='';rows=[];
+  var end=$('end').value;
+  if(!/^\d{4}-\d{2}$/.test(end)){$('endMsg').textContent='請先選「最近一個月是哪個月」。';$('endMsg').hidden=false;calc();return;}
+  $('endMsg').hidden=true;
+  for(var k=-11;k<=0;k++){
+    var ym=addMonths(end,k);var r={ym:ym};
+    var d=el('div','mrow');d.setAttribute('data-m',ym);
+    d.appendChild(el('div','mlabel',label(ym)));
+    var ls=el('label','', '服務（勞務）');r.s=el('input');r.s.type='text';r.s.inputMode='numeric';r.s.maxLength=30;r.s.setAttribute('data-f','s');r.s.placeholder='例：48000';ls.appendChild(r.s);
+    var lg=el('label','', '東西（貨物）');r.g=el('input');r.g.type='text';r.g.inputMode='numeric';r.g.maxLength=30;r.g.setAttribute('data-f','g');r.g.placeholder='例：30000';lg.appendChild(r.g);
+    r.ls=ls;r.lg=lg;
+    if(store[ym]){r.s.value=store[ym].s||'';r.g.value=store[ym].g||'';}
+    r.s.oninput=r.g.oninput=calc;
+    d.appendChild(ls);d.appendChild(lg);
+    r.res=el('div','res');d.appendChild(r.res);r.box=d;
+    box.appendChild(d);rows.push(r);
+  }
+  calc();
+}
+function pctText(pm){return (pm/10).toFixed(1)+'%';}
+function judge(r,kd){
+  // 回傳 {st, text}
+  var now=nowYM();
+  if(r.ym>now)return {st:'skip',text:'還沒到的月份，不對照。'};
+  var rk=ruleOf(r.ym);
+  var needS=kd!=='gds',needG=kd!=='svc';
+  var sv=needS?parse(r.s.value):'',gv=needG?parse(r.g.value):'';
+  r.s.classList.toggle('err',needS&&(sv!==''&&!(sv>=0)));r.g.classList.toggle('err',needG&&(gv!==''&&!(gv>=0)));
+  if((needS&&sv===-1)||(needG&&gv===-1))return {st:'err',text:'數字太大，請再檢查一次。'};
+  if((needS&&sv!==''&&isNaN(sv))||(needG&&gv!==''&&isNaN(gv)))return {st:'err',text:'請只填 0 以上的整數（元），不要有小數點、負號或文字。'};
+  if(sv===''&&gv==='')return {st:'empty',text:'沒填，跳過。'};
+  if(!rk)return {st:'skip',text:'2007 年以前的門檻本工具沒有收，不對照。'};
+  var R=RULES[rk],tag='（'+R.name+'門檻）';
+  if(kd==='svc')return sv>=R.s?{st:'hit',text:'達到起徵點：'+fmt(sv)+' 元 ≥ '+fmt(R.s)+' 元'+tag}:{st:'miss',text:'未達起徵點：'+fmt(sv)+' 元 < '+fmt(R.s)+' 元'+tag};
+  if(kd==='gds')return gv>=R.g?{st:'hit',text:'達到起徵點：'+fmt(gv)+' 元 ≥ '+fmt(R.g)+' 元'+tag}:{st:'miss',text:'未達起徵點：'+fmt(gv)+' 元 < '+fmt(R.g)+' 元'+tag};
+  // 兩種都有：貨物/G ＋ 勞務/S，用整數比，不用小數比
+  var g=gv===''?0:gv,s=sv===''?0:sv;
+  var num=g*R.s+s*R.g,den=R.g*R.s;
+  var pm=Math.floor(num/(den/1000));   // 千分比，取到小數一位（無條件捨去，不會把 99.99% 顯示成 100%）
+  var detail='貨物 '+fmt(g)+' ÷ '+fmt(R.g)+' ＋ 勞務 '+fmt(s)+' ÷ '+fmt(R.s)+' ＝ '+pctText(pm)+tag;
+  if(rk==='old'&&num===den)return {st:'ask',text:'剛好 100%：舊的令文字寫「超過」、公式寫「≧」，這一格不自動判斷，請問國稅局。'+detail};
+  return num>=den?{st:'hit',text:'合計達到 100%，達到起徵點。'+detail}:{st:'miss',text:'合計未達 100%，未達起徵點。'+detail};
+}
+function calc(){
+  var kd=kind(),c={hit:0,miss:0,ask:0,err:0};
+  rows.forEach(function(r){
+    r.ls.classList.toggle('hide',kd==='gds');r.lg.classList.toggle('hide',kd==='svc');
+    var j=judge(r,kd);r.box.setAttribute('data-status',j.st);
+    r.res.textContent='';r.res.appendChild(el('span',j.st==='hit'?'hitc':j.st==='miss'?'ok':j.st==='ask'?'warn':j.st==='err'?'bad':'note',j.text));
+    if(c[j.st]!=null)c[j.st]++;
+  });
+  var s=$('sum');s.textContent='';
+  if(!rows.length){s.appendChild(el('p','note','請先選「最近一個月是哪個月」。'));return;}
+  var n=c.hit+c.miss+c.ask;
+  if(!n&&!c.err){s.appendChild(el('p','note','填了數字就會出現。'));return;}
+  var big=el('div','big','有對照的 '+n+' 個月：達到 '+c.hit+' 個月、未達 '+c.miss+' 個月');big.setAttribute('data-k','sum');s.appendChild(big);
+  if(c.ask){var a=el('p','warn','另有 '+c.ask+' 個月剛好卡在舊門檻的 100%，請問國稅局。');a.setAttribute('data-k','ask');s.appendChild(a);}
+  if(c.err){var e=el('p','bad','有 '+c.err+' 格數字格式不對，已標紅，沒有算進去。');e.setAttribute('data-k','err');s.appendChild(e);}
+  if(c.hit){var h=el('p','','有月份達到起徵點。這只代表數字到了官方門檻；接下來怎麼做，請帶著這張表問所轄國稅局。');h.setAttribute('data-k','hitNote');s.appendChild(h);}
+}
+Array.prototype.forEach.call(document.querySelectorAll('input[name=kind]'),function(x){x.onchange=calc;});
+$('end').onchange=build;$('end').oninput=build;
+$('ex').onclick=function(){
+  // 例子：2024-04～2025-03，跨過 114 年 1 月新門檻那一天
+  store={};rows=[];$('kSvc').checked=true;$('end').value='2025-03';build();
+  var v=['38000','41000','39000','42000','36000','40000','45000','47000','45000','52000','48000','50000'];
+  rows.forEach(function(r,i){r.s.value=v[i];});calc();
+};
+$('clear').onclick=function(){store={};rows.forEach(function(r){r.s.value='';r.g.value='';});calc();};
+var d=new Date();d.setDate(1);d.setMonth(d.getMonth()-1);$('end').value=ymOf(d);   // 預設：上個月
+build();
+})();
+</script>
+</body>
+</html>

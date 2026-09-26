@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>透明價目表＋傳圖報價｜美業 AI 技能包</title>
+<style>
+:root{--bg:#F0EEE9;--card:#fff;--ink:#3D3835;--mute:#6E675F;--rose:#7D4351;--teal:#007B7F;--orange:#E88A2C;--pink:#FFCCCC;--line:#DDD6CE}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.7}
+.wrap{max-width:980px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:1.6rem;margin:0 0 4px;color:var(--rose)}
+h2{font-size:1.05rem;margin:0 0 10px;color:var(--teal)}
+h3{font-size:.95rem;margin:14px 0 6px;color:var(--rose)}
+.sub{color:var(--mute);margin:0 0 16px}
+.card{background:var(--card);border-radius:18px;padding:20px;box-shadow:0 2px 10px rgba(125,67,81,.08);margin-bottom:18px}
+.note{color:var(--mute);font-size:.88rem}
+.bad{color:#C0392B;font-weight:700}
+.exbar{border:2px solid var(--orange);background:#FFF4E8;border-radius:12px;padding:8px 12px;font-weight:700;margin:8px 0}
+.grid{display:grid;grid-template-columns:1fr;gap:8px 14px}
+@media (min-width:760px){.grid{grid-template-columns:1fr 1fr}}
+label{display:block;font-size:.85rem;font-weight:700}
+input,select{display:block;width:100%;margin-top:2px;font:inherit;font-weight:400;padding:8px 10px;border:2px solid var(--line);border-radius:10px;background:#FFFCFA;font-size:16px;min-height:44px}
+input:focus,select:focus{outline:none;border-color:var(--teal)}
+input.err{border-color:#C0392B;background:#FDE2E0}
+.it{border:2px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:10px;display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;align-items:end}
+.it .nm{grid-column:1 / -1}
+.it .hint{grid-column:1 / -1}
+@media (min-width:760px){.it.base{grid-template-columns:2fr 1fr auto}.it.addon{grid-template-columns:2fr 1.3fr 1fr auto}.it .nm{grid-column:auto}}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px}
+button{font:inherit;font-weight:700;border:0;border-radius:999px;padding:10px 20px;cursor:pointer;min-height:44px}
+.primary{background:var(--rose);color:#fff}
+.ghost{background:#fff;color:var(--teal);border:2px solid var(--teal)}
+.small{padding:4px 14px;font-size:.85rem}
+.pick{border:2px solid var(--line);border-radius:12px;padding:8px 12px;margin-bottom:8px;display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;justify-content:space-between}
+.pick .pn{font-weight:700;word-break:break-word;flex:1 1 160px}
+.pick label{display:flex;align-items:center;gap:6px;font-weight:400;min-height:44px}
+.pick input[type=checkbox]{width:22px;height:22px;min-height:0;margin:0}
+.pick select{width:auto;min-width:170px}
+.out{white-space:pre-wrap;word-break:break-word;border:2px solid var(--teal);border-radius:14px;padding:12px;background:#FFFCFA;min-height:60px}
+.sheet{border:2px solid var(--rose);border-radius:16px;padding:18px;background:#fff}
+.sheet .st{font-size:1.35rem;font-weight:900;color:var(--rose);margin:0 0 6px;word-break:break-word}
+.pl{display:flex;justify-content:space-between;gap:12px;border-bottom:1px dashed var(--line);padding:6px 0;font-size:1rem}
+.pl .n{word-break:break-word;min-width:0}
+.pl .p{font-weight:700;white-space:nowrap}
+.pl.x .p{color:var(--rose)}
+.sec{font-weight:900;margin:14px 0 4px;padding:4px 10px;border-radius:8px;background:#F6ECEE;color:var(--rose);font-size:1rem}
+.sec.t{background:#E6F2F2;color:var(--teal)}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+footer{color:var(--mute);font-size:.8rem;margin-top:24px}
+footer a{color:var(--teal)}
+@media print{body{background:#fff}.noprint{display:none!important}.wrap{padding:0}.card.sheetcard{box-shadow:none;padding:0}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="noprint">
+  <h1>透明價目表＋傳圖報價</h1>
+  <p class="sub">客人傳一張圖問「這款多少？」，每次都要重算一次、打一大段字。先把妳的價目建好一次：基本項目多少錢、哪些加價項目<b>含在基本價</b>、哪些要<b>另計</b>。之後客人傳圖來，只要勾這張圖要做哪幾項，就會產生一段報價回覆，一鍵複製貼回去。<b>只用妳填的項目與金額，不會替妳編規則或加價。</b>資料只存在這台電腦的這個瀏覽器，不會上傳，也不需要登入。這裡用不到客人的資料，請不要填客人姓名電話。</p>
+  <p id="store" class="bad" hidden>這個瀏覽器不讓網頁存資料（常見原因：無痕模式）。現在可以照常用，但關掉就會不見，請先按「複製備份碼」或下載價目表。</p>
+
+  <div class="card">
+    <h2>① 我的價目</h2>
+    <p id="exwarn1" class="exbar" hidden>現在是「例子」，價格是隨便填的，請換成妳自己的價格。換好之後按下面的「我已經換成自己的價格」。</p>
+    <div class="grid">
+      <label>店名（選填，會印在價目表上）<input id="shop" maxlength="40" placeholder="例：小美美甲工作室"></label>
+      <label>報價最後一句（選填，預設空白）<input id="ending" maxlength="120" placeholder="想加才加，例如提醒到店再確認"></label>
+    </div>
+    <div class="row"><button type="button" class="ghost small" id="endfill">放一句常用結尾</button><span class="note">按了才會帶入，帶入後可以改或刪。</span></div>
+    <p class="note">例如「手部凝膠單色」。金額只收 0 以上的整數（不用打 NT$）。</p>
+    <div id="bases"></div>
+    <div class="row"><button type="button" class="ghost" id="addBase">＋ 加一個基本項目</button></div>
+    <h3>加價項目</h3>
+    <p class="note">例如卸甲、建構、延甲、跳色、飾品、長度加價。每一項都要選：<b>含在基本價</b>（不另外收錢），或<b>另計</b>（要填加多少錢）。</p>
+    <div id="addons"></div>
+    <div class="row"><button type="button" class="ghost" id="addAddon">＋ 加一個加價項目</button></div>
+    <div class="row">
+      <button type="button" class="ghost" id="ex">放一組例子（美甲）</button>
+      <button type="button" class="ghost" id="exdone" hidden>我已經換成自己的價格</button>
+      <button type="button" class="ghost" id="clr">清空</button>
+      <span id="msg4" class="bad" role="status"></span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>② 客人傳圖來問：這張圖要做哪幾項？</h2>
+    <p class="note">基本項目打勾；加價項目選「這款要做」或「現場看狀況」（例如要不要卸甲、補建構，要看到指甲才知道）。</p>
+    <p id="exwarn2" class="exbar" hidden>提醒：現在的價格還是例子，不要直接傳給客人。</p>
+    <div id="pick"><p class="note">上面先填好至少一個基本項目（名稱＋金額）。</p></div>
+    <h3>報價回覆</h3>
+    <div id="quote" class="out"></div>
+    <div class="row"><button type="button" class="primary" id="cp">複製這段回覆</button><button type="button" class="ghost" id="reset">這張圖重選</button><span id="msg" class="note" role="status"></span></div>
+  </div>
+  </div>
+
+  <div class="card sheetcard">
+    <h2 class="noprint">③ 價目表（可以列印或截圖）</h2>
+    <div id="sheet" class="sheet"></div>
+    <div class="row noprint"><button type="button" class="primary" id="prt">列印價目表</button><button type="button" class="ghost" id="dltxt">下載價目表（文字檔）</button><button type="button" class="ghost" id="dlcsv">下載價目表（CSV）</button><span id="msg3" class="note" role="status"></span></div>
+  </div>
+
+  <div class="card noprint">
+    <h2>④ 備份</h2>
+    <p class="note">換電腦或清除瀏覽器資料前，先複製備份碼存起來（貼到記事本就好）；到新電腦按「貼上備份碼還原」。</p>
+    <div class="row"><button type="button" class="ghost" id="exp">複製備份碼</button><button type="button" class="ghost" id="imp">貼上備份碼還原</button><span id="msg2" class="note" role="status"></span></div>
+  </div>
+
+  <footer class="noprint">美業 AI 技能包 v0.5.0｜美業小工具｜<a href="index.html">回工具首頁</a>｜<a href="https://github.com/hourlight-skills/beauty-ai-skills/issues" target="_blank" rel="noopener">回報問題</a><br>資料查核日 2026-09-26｜這個工具沒有引用任何法規、平台價格或統計數字，所以沒有外部官方來源；畫面上的金額全部是妳自己填的（按「放一組例子」時除外，那組是隨便填的例子）。</footer>
+</div>
+<script>
+(function(){
+var KEY='hl-price-quote-v1',MAXI=60,DEF_END='實際以到店看過指甲狀況為準。',EXMARK='【這是例子價格，請換成妳自己的】';
+var EXAMPLE=[['base','手部凝膠單色','',1200],['base','手部凝膠漸層','',1400],['base','足部凝膠單色','',1300],
+  ['addon','基本保養','incl',''],['addon','卸甲','extra',300],['addon','建構（補強）','extra',200],['addon','延甲（全手）','extra',800],
+  ['addon','跳色','extra',200],['addon','飾品','extra',150],['addon','長度加價','extra',200]];
+var $=function(id){return document.getElementById(id);};
+function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;}
+function fmt(n){return String(n).replace(/\B(?=(\d{3})+(?!\d))/g,',');}
+// 金額：只收 0 以上的整數（全形數字、千分位逗號先轉掉），最多 7 位
+function parseAmt(s){s=String(s==null?'':s).replace(/[０-９]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-65248);}).replace(/[,，\s]/g,'');
+  if(s==='')return {empty:true};if(!/^\d{1,7}$/.test(s))return {bad:true};return {v:parseInt(s,10)};}
+var st={shop:'',ending:'',example:false,items:[]},seq=0,sel={};
+function mk(kind,name,mode,price){return {id:++seq,kind:kind==='addon'?'addon':'base',name:String(name||''),mode:mode==='incl'?'incl':'extra',price:String(price==null?'':price)};}
+function needAmt(it){return it.kind==='base'||it.mode==='extra';}
+function amt(it){return parseAmt(it.price).v;}
+function valid(it){if(!it.name.trim())return false;if(!needAmt(it))return true;return amt(it)!=null;}
+function snapshot(){return JSON.stringify({v:1,shop:st.shop,ending:st.ending,example:st.example,items:st.items.map(function(it){return {kind:it.kind,name:it.name,mode:it.mode,price:it.price};})});}
+function save(){var ok=true;try{localStorage.setItem(KEY,snapshot());}catch(e){ok=false;}$('store').hidden=ok;return ok;}
+function clean(o){   // 備份碼／儲存只收固定欄位、每欄當純文字、限制筆數與長度
+  if(!o||typeof o!=='object'||!Array.isArray(o.items)||o.items.length>MAXI)throw 0;
+  return {shop:String(o.shop==null?'':o.shop).slice(0,40),ending:String(o.ending==null?'':o.ending).slice(0,120),example:o.example===true,
+    items:o.items.map(function(v){v=v||{};return mk(v.kind,String(v.name==null?'':v.name).slice(0,40),v.mode,String(v.price==null?'':v.price).slice(0,12));})};}
+function load(){try{var t=localStorage.getItem(KEY);if(!t)return null;return clean(JSON.parse(t));}catch(e){return null;}}
+
+function drawEditor(){
+  $('shop').value=st.shop;$('ending').value=st.ending;
+  ['bases','addons'].forEach(function(b){$(b).textContent='';});
+  st.items.forEach(function(it){
+    var box=el('div','it '+it.kind);
+    var ln=el('label','nm',it.kind==='base'?'項目名稱':'加價項目名稱');var n=el('input');n.maxLength=40;n.placeholder=it.kind==='base'?'例：手部凝膠單色':'例：卸甲';n.value=it.name;
+    n.oninput=function(){it.name=n.value;refresh();};ln.appendChild(n);box.appendChild(ln);
+    var p=el('input');
+    if(it.kind==='addon'){var lm=el('label','','怎麼收');var m=el('select');[['extra','另計（要加錢）'],['incl','含在基本價']].forEach(function(o){var op=el('option','',o[1]);op.value=o[0];m.appendChild(op);});m.value=it.mode;
+      m.onchange=function(){it.mode=m.value;p.disabled=it.mode==='incl';refresh();};lm.appendChild(m);box.appendChild(lm);}
+    var lp=el('label','',it.kind==='base'?'價格（元）':'加多少（元）');p.inputMode='numeric';p.maxLength=12;p.placeholder=it.kind==='base'?'例：1200':'例：300';p.value=it.price;p.disabled=it.kind==='addon'&&it.mode==='incl';
+    p.oninput=function(){it.price=p.value;refresh();};lp.appendChild(p);box.appendChild(lp);it._p=p;
+    var rm=el('button','ghost small','刪掉');rm.type='button';rm.setAttribute('aria-label','刪掉這一項');rm.onclick=function(){st.items=st.items.filter(function(x){return x!==it;});delete sel[it.id];drawEditor();refresh();};box.appendChild(rm);
+    it._h=el('div','hint note');box.appendChild(it._h);
+    $(it.kind==='base'?'bases':'addons').appendChild(box);});
+}
+function marks(){st.items.forEach(function(it){if(!it._p)return;var a=parseAmt(it.price),need=needAmt(it);
+  it._p.classList.toggle('err',need&&!!a.bad);
+  var h='';if(need&&a.bad)h='金額只收 0 以上的整數，例如 300。這一項先不會出現在報價與價目表。';
+  else if(it.name.trim()&&need&&a.empty)h='還沒填金額，這一項先不會出現在報價與價目表。';
+  else if(!it.name.trim()&&!(need&&a.empty))h='還沒填名稱，這一項先不會出現在報價與價目表。';
+  it._h.textContent=h;it._h.className='hint '+(need&&a.bad?'bad':'note');});}
+
+function drawPick(){
+  var box=$('pick');box.textContent='';var any=false;
+  st.items.forEach(function(it){if(!valid(it))return;any=true;var nm=it.name.trim();var r=el('div','pick');
+    var tag=it.kind==='base'?'NT$'+fmt(amt(it)):(it.mode==='incl'?'含在基本價':'另計 NT$'+fmt(amt(it)));
+    r.appendChild(el('span','pn',nm+'（'+tag+'）'));
+    if(it.kind==='base'){var lb=el('label');var c=el('input');c.type='checkbox';c.checked=sel[it.id]===true;c.onchange=function(){sel[it.id]=c.checked;drawQuote();};lb.appendChild(c);lb.appendChild(document.createTextNode('這款要做'));r.appendChild(lb);}
+    else{var s=el('select');s.setAttribute('aria-label',nm+' 這款要不要做');[['no','不用'],['do','這款要做'],['maybe','現場看狀況']].forEach(function(o){var op=el('option','',o[1]);op.value=o[0];s.appendChild(op);});s.value=sel[it.id]||'no';s.onchange=function(){sel[it.id]=s.value;drawQuote();};r.appendChild(s);}
+    box.appendChild(r);});
+  if(!any)box.appendChild(el('p','note','上面先填好至少一個基本項目（名稱＋金額）。'));
+}
+function buildQuote(){
+  var bases=[],incl=[],extra=[],mx=[],mi=[],total=0;
+  st.items.forEach(function(it){if(!valid(it))return;var s=sel[it.id],nm=it.name.trim();
+    if(it.kind==='base'){if(s===true){bases.push(nm);total+=amt(it);}}
+    else if(s==='do'){if(it.mode==='incl')incl.push(nm);else{extra.push(nm+' NT$'+fmt(amt(it)));total+=amt(it);}}
+    else if(s==='maybe'){if(it.mode==='incl')mi.push(nm);else mx.push(it);}});
+  if(!bases.length&&!extra.length&&!incl.length)return '';
+  var L=['這款大約 NT$'+fmt(total)+'。'];
+  if(bases.length||incl.length)L.push('含：'+bases.concat(incl).join('、')+'。');
+  if(extra.length)L.push('另計（已經算在上面的金額裡）：'+extra.join('、')+'。');
+  if(mx.length===1)L.push('現場如果需要'+mx[0].name.trim()+'，另外加 NT$'+fmt(amt(mx[0]))+'。');
+  else if(mx.length>1)L.push('現場如果需要'+mx.map(function(it){return it.name.trim();}).join('或')+'，另外加價：'+mx.map(function(it){return it.name.trim()+' NT$'+fmt(amt(it));}).join('、')+'。');
+  if(mi.length)L.push('現場如果需要'+mi.join('或')+'，含在基本價，不另外收。');
+  var e=st.ending.trim();if(e)L.push(e);
+  return L.join('\n');
+}
+var lastQuote='';
+function drawQuote(){lastQuote=buildQuote();var q=$('quote');q.textContent=lastQuote||'勾選這張圖要做的基本項目（或加價項目選「這款要做」），這裡就會出現報價回覆。';q.classList.toggle('note',!lastQuote);}
+function sheetData(){var b=[],x=[],i=[];st.items.forEach(function(it){if(!valid(it))return;var nm=it.name.trim();
+  if(it.kind==='base')b.push([nm,amt(it)]);else if(it.mode==='extra')x.push([nm,amt(it)]);else i.push([nm]);});return {b:b,x:x,i:i};}
+function drawSheet(){var d=sheetData(),s=$('sheet');s.textContent='';
+  if(isEx())s.appendChild(el('p','exbar',EXMARK));   // 例子標記一律放第一行
+  s.appendChild(el('div','st',st.shop.trim()?st.shop.trim()+'｜價目表':'價目表'));
+  if(!d.b.length&&!d.x.length&&!d.i.length){s.appendChild(el('p','note','上面填好項目，這裡就會出現價目表。'));return;}
+  function line(n,p,cls){var r=el('div','pl'+(cls?' '+cls:''));r.appendChild(el('span','n',n));if(p!=null)r.appendChild(el('span','p',p));s.appendChild(r);}
+  if(d.b.length){s.appendChild(el('div','sec','基本項目'));d.b.forEach(function(r){line(r[0],'NT$'+fmt(r[1]));});}
+  if(d.x.length){s.appendChild(el('div','sec','另計項目（要另外加價）'));d.x.forEach(function(r){line(r[0],'＋NT$'+fmt(r[1]),'x');});}
+  if(d.i.length){s.appendChild(el('div','sec t','已含在基本價，不另外收'));d.i.forEach(function(r){line(r[0],'含',null);});}
+}
+function sheetText(){var d=sheetData(),L=[];if(isEx())L.push(EXMARK);L.push(st.shop.trim()?st.shop.trim()+'｜價目表':'價目表');
+  if(d.b.length){L.push('','【基本項目】');d.b.forEach(function(r){L.push(r[0]+'　NT$'+fmt(r[1]));});}
+  if(d.x.length){L.push('','【另計項目（要另外加價）】');d.x.forEach(function(r){L.push(r[0]+'　＋NT$'+fmt(r[1]));});}
+  if(d.i.length){L.push('','【已含在基本價，不另外收】');d.i.forEach(function(r){L.push(r[0]);});}
+  return L.join('\n');}
+function cell(v){v=String(v);if(/^[=+\-@\t\r\n]/.test(v))v="'"+v;return /[",\r\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;}
+function sheetCsv(){var d=sheetData(),R=isEx()?[[EXMARK]]:[];R.push(['種類','項目','怎麼收','金額（元）']);
+  d.b.forEach(function(r){R.push(['基本項目',r[0],'基本價',r[1]]);});d.x.forEach(function(r){R.push(['加價項目',r[0],'另計',r[1]]);});d.i.forEach(function(r){R.push(['加價項目',r[0],'含在基本價','']);});
+  return '﻿'+R.map(function(r){return r.map(cell).join(',');}).join('\r\n');}
+function dl(text,name,type){try{var u=URL.createObjectURL(new Blob([text],{type:type})),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u);},1000);}catch(e){prompt('複製下面這段存起來：',text);}}
+// 還在例子狀態：對客的複製／下載／列印一律擋下，避免隨便填的例子價格被傳給客人
+function blockEx(msg){if(!isEx())return false;$(msg).textContent='';$(msg).className='bad';$(msg).textContent='現在還有例子價格，不能複製、下載或列印。請先把價格換成妳自己的（可以按「我已經換成自己的價格」檢查還剩哪幾項）。';return true;}
+function exState(){var on=isEx();$('exwarn1').hidden=!on;$('exwarn2').hidden=!on;$('exdone').hidden=!on;
+  if(!on){$('msg4').textContent='';['msg','msg3'].forEach(function(m){if($(m).className==='bad'){$(m).textContent='';$(m).className='note';}});}}
+function refresh(){save();marks();drawPick();drawQuote();drawSheet();exState();}
+function copy(t,msg,okText){(navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(t):Promise.reject()).then(function(){$(msg).textContent=okText;},function(){prompt('複製下面這段：',t);});}
+
+$('shop').oninput=function(){st.shop=$('shop').value;refresh();};
+$('ending').oninput=function(){st.ending=$('ending').value;refresh();};
+$('addBase').onclick=function(){if(st.items.length>=MAXI){$('msg').textContent='最多 '+MAXI+' 項。';return;}st.items.push(mk('base'));drawEditor();refresh();};
+$('addAddon').onclick=function(){if(st.items.length>=MAXI){$('msg').textContent='最多 '+MAXI+' 項。';return;}st.items.push(mk('addon'));drawEditor();refresh();};
+$('ex').onclick=function(){if(st.items.some(function(it){return it.name.trim()||it.price.trim();})&&!confirm('放例子會蓋掉現在填的價目，確定嗎？'))return;
+  st={shop:'小美美甲工作室（例子）',ending:'',example:true,items:EXAMPLE.map(function(e){return mk(e[0],e[1],e[2],e[3]);})};
+  sel={};$('msg4').textContent='';drawEditor();refresh();};
+// 還留著的例子價格：現在會顯示價格的項目（基本項目＋另計加價項目）裡，名稱＋價格跟例子一模一樣的
+function exLeft(){return st.items.filter(function(it){if(!needAmt(it))return false;var a=amt(it);if(a==null)return false;var nm=it.name.trim();
+  return EXAMPLE.some(function(e){return e[3]!==''&&e[1]===nm&&e[3]===a;});});}
+// st.example＝「放過例子」，只有按清空才重設；每次畫面更新、每次按複製／下載／列印都重新算
+function isEx(){return st.example&&exLeft().length>0;}
+$('exdone').onclick=function(){var left=exLeft();   // 只是「檢查一下」：放行與否一律由 isEx() 當下重算
+  if(st.example&&left.length){$('msg4').textContent='還有 '+left.length+' 項是例子價格（例：'+left[0].name.trim()+' '+fmt(amt(left[0]))+'），改掉或刪掉後再按一次。';return;}
+  $('msg4').textContent='';refresh();};
+$('endfill').onclick=function(){st.ending=DEF_END;$('ending').value=DEF_END;refresh();};   // 結尾一定是店家自己按了才帶入
+$('clr').onclick=function(){if(!confirm('清空所有價目？（建議先按「複製備份碼」）'))return;st={shop:'',ending:'',example:false,items:[mk('base'),mk('addon')]};sel={};$('msg4').textContent='';drawEditor();refresh();};
+$('cp').onclick=function(){if(blockEx('msg'))return;if(!lastQuote){$('msg').textContent='還沒有報價可以複製：先勾這張圖要做的項目。';return;}copy(lastQuote,'msg','已複製，貼回給客人前再看一眼。');};
+$('reset').onclick=function(){sel={};drawPick();drawQuote();$('msg').textContent='';};
+$('prt').onclick=function(){if(blockEx('msg3'))return;window.print();};
+$('dltxt').onclick=function(){if(blockEx('msg3'))return;dl(sheetText(),'價目表.txt','text/plain;charset=utf-8');};   // 一律用畫面上的資料，不讀儲存
+$('dlcsv').onclick=function(){if(blockEx('msg3'))return;dl(sheetCsv(),'價目表.csv','text/csv;charset=utf-8');};
+$('exp').onclick=function(){save();copy(snapshot(),'msg2','已複製，貼到記事本存起來。');};
+$('imp').onclick=function(){var t=prompt('把備份碼貼在這裡：');if(!t)return;try{if(t.length>50000)throw 0;var o=clean(JSON.parse(t));st=o;sel={};drawEditor();refresh();var ok=$('store').hidden;
+    $('msg2').textContent='已還原 '+o.items.length+' 項'+(ok?'。':'，但這個瀏覽器存不進去，關掉就會不見。');}catch(e){$('msg2').textContent='這段不是正確的備份碼。';}};
+
+var got=load();if(got&&got.items.length){st=got;}else{if(got){st.shop=got.shop;st.ending=got.ending;}st.items=[mk('base'),mk('addon')];}
+drawEditor();refresh();
+})();
+</script>
+</body>
+</html>

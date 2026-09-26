@@ -5,13 +5,13 @@
   },
   "metadata": {
     "description": "美業 AI 技能包：給美容、芳療、美髮、美甲、美睫、紋繡工作室用的 AI 技能與小工具",
-    "version": "0.4.0"
+    "version": "0.5.0"
   },
   "plugins": [
     {
       "name": "beauty-ai-skills",
       "description": "美業 AI 技能包：社群貼文、短影音腳本、負評回覆、LINE 貼圖、預約訊息、客人訊息分級、記帳與預收台帳、話術對練、化粧品廣告字眼檢查、打平線、紋繡同意書與術後單、AI 指令教練、上傳前隱私檢查、客人帶 AI 圖應對、30 天導入計畫、客人偏好卡、常見問題回覆庫、新人教材、作品照同意",
-      "version": "0.4.0",
+      "version": "0.5.0",
       "source": "./",
       "strict": false,
       "skills": [

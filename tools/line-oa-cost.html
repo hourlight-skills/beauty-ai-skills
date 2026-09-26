@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LINE 官方帳號費用試算｜美業 AI 技能包</title>
+<style>
+:root{--bg:#F0EEE9;--card:#fff;--ink:#3D3835;--mute:#6E675F;--rose:#7D4351;--teal:#007B7F;--orange:#E88A2C;--pink:#FFCCCC;--line:#DDD6CE}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.7}
+.wrap{max-width:980px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:1.6rem;margin:0 0 4px;color:var(--rose)}
+h2{font-size:1.05rem;margin:0 0 10px;color:var(--teal)}
+.sub{color:var(--mute);margin:0 0 16px}
+.card{background:var(--card);border-radius:18px;padding:20px;box-shadow:0 2px 10px rgba(125,67,81,.08);margin-bottom:18px}
+.alert{border:3px solid var(--rose);background:#FFF6F6}
+.alert p{margin:4px 0}
+.note{color:var(--mute);font-size:.88rem}
+label{display:block;font-size:.85rem;font-weight:700}
+input{display:block;width:100%;margin-top:2px;font:inherit;font-weight:400;padding:8px;border:2px solid var(--line);border-radius:10px;background:#FFFCFA;font-size:16px;min-height:44px}
+input[type=radio]{display:inline-block;width:auto;min-height:0;margin:0 6px 0 0;vertical-align:middle}
+.radio{display:flex;align-items:center;min-height:44px;font-weight:700;cursor:pointer}
+input:focus{outline:none;border-color:var(--teal)}
+input.err{border-color:#C0392B;background:#FDE2E0}
+.grid{display:grid;grid-template-columns:1fr;gap:10px 14px}
+@media (min-width:640px){.grid{grid-template-columns:1fr 1fr}}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px}
+button{font:inherit;font-weight:700;border:0;border-radius:999px;padding:10px 20px;cursor:pointer;min-height:44px}
+.ghost{background:#fff;color:var(--teal);border:2px solid var(--teal)}
+.big{font-size:1.5rem;font-weight:900;color:var(--rose)}
+.bad{color:#C0392B;font-weight:700}.ok{color:var(--teal);font-weight:700}.warn{color:#9A5B12;font-weight:700}
+.plans{display:grid;grid-template-columns:1fr;gap:12px}
+@media (min-width:760px){.plans{grid-template-columns:1fr 1fr 1fr}}
+.plan{border:2px solid var(--line);border-radius:14px;padding:12px}
+.plan.best{border-color:var(--teal);background:#F2FAFA}
+.plan h3{margin:0 0 6px;font-size:1rem;color:var(--rose)}
+.plan dl{margin:0}.plan dt{font-size:.8rem;color:var(--mute)}.plan dd{margin:0 0 6px;font-weight:700}
+.tag{display:inline-block;background:var(--teal);color:#fff;border-radius:999px;padding:0 10px;font-size:.8rem;margin-left:6px}
+.now{outline:3px solid var(--orange);outline-offset:2px;border-radius:6px;padding:0 4px}
+ul.list{padding-left:20px;margin:6px 0}ul.list li{margin-bottom:6px}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+a{color:var(--teal);overflow-wrap:anywhere}
+footer{color:var(--mute);font-size:.8rem;margin-top:24px}
+footer p{margin:4px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>LINE 官方帳號費用試算</h1>
+  <p class="sub">LINE 官方帳號 2026 年 11 月 1 日起調整價格。填好友數和每月群發幾次，看三個方案各要付多少、哪一個最省，再算算「只發給熟客」可以省多少。只在這個畫面上算，不會存、不會上傳。</p>
+
+  <div class="card alert" id="banner">
+    <p><b>價格依 LINE 官方 2026-09 公告</b>（公告日 2026/09/01，本頁 2026-09-26 查核），<b>一切以 LINE 官方當下公告為準</b>：<a href="https://tw.linebiz.com/column/LINEOA-2026-Price-Plan/" target="_blank" rel="noopener">2026年 LINE 官方帳號方案價格調整（官方公告）</a></p>
+    <p class="bad">要在 2026 年 10 月 27 日前決定方案。官方原文：「如果您不同意本次的價格方案調整，請在2026年10月27日前將您的中用量或高用量方案改為輕用量方案。」</p>
+    <p>官方公告寫明「下方金額說明皆為未稅價格」，所以本頁的金額也都是<b>未稅</b>。</p>
+  </div>
+
+  <div class="card">
+    <h2>① 要算哪一天的價格</h2>
+    <label style="max-width:260px">試算日期<input type="date" id="day"></label>
+    <p id="dayMsg" class="note"></p>
+  </div>
+
+  <div class="card">
+    <h2>② 每個月會發出多少則訊息</h2>
+    <p class="note">官方的算法：「目標好友數量 ✕ 每月群發次數 ＝ 每月訊息數」。一對一聊天、自動回應、加入好友的歡迎訊息不算錢。</p>
+    <div class="row">
+      <label class="radio"><input type="radio" name="mode" value="a" id="modeA" checked>用好友數 × 群發次數算</label>
+      <label class="radio"><input type="radio" name="mode" value="b" id="modeB">我直接填每月則數</label>
+    </div>
+    <div class="grid" id="boxA">
+      <label>目標好友數（每次群發會收到的人數）<input type="text" id="friends" inputmode="numeric" maxlength="20" placeholder="例：500"></label>
+      <label>每月群發幾次<input type="text" id="times" inputmode="numeric" maxlength="20" placeholder="例：4（每週一次）"></label>
+    </div>
+    <div class="grid" id="boxB" hidden>
+      <label>每月預計發出的訊息則數<input type="text" id="direct" inputmode="numeric" maxlength="20" placeholder="例：2000"></label>
+    </div>
+    <p id="inMsg" class="note"></p>
+    <div id="total"></div>
+    <div class="row"><button type="button" class="ghost" id="ex1">例子：500 人、每月 4 次</button><button type="button" class="ghost" id="ex2">例子：2,000 人、每月 4 次</button></div>
+  </div>
+
+  <div class="card">
+    <h2>③ 三個方案對照</h2>
+    <div id="best"></div>
+    <div class="plans" id="plans"></div>
+    <p class="note">官方原文：中用量「不可加購；如需發送更多訊息，需升級為高用量方案」；輕用量「不可加購」。所以超過免費則數，這兩個方案就發不出去。</p>
+    <p class="note">高用量加購：2026-11-01 起，官方寫「第 1～50,000 則：0.2 元／則；第 50,001 則起：0.15 元／則」，超過每月 6,000 則免費訊息後才開始算。2026-10-31 以前的級距，官方只放在圖片裡、文字只寫「每則從 0.2 元起降」，所以這裡只用每則 0.2 元估一個「最多多少」。</p>
+  </div>
+
+  <div class="card">
+    <h2>④ 只發給一部分人，可以省多少</h2>
+    <p class="note">例如只發給近 90 天有來的熟客。先在上面用「好友數 × 群發次數」填好，再填這次只想發給幾個人（要在 LINE 後台用分眾或標籤挑出來）。</p>
+    <label style="max-width:320px">只發給幾個人<input type="text" id="part" inputmode="numeric" maxlength="20" placeholder="例：300"></label>
+    <p id="partMsg" class="note"></p>
+    <div id="save"></div>
+  </div>
+
+  <div class="card">
+    <h2>提醒</h2>
+    <ul class="list note">
+      <li>這是試算，實際帳單以 LINE 官方帳號後台為準。官方也有自己的<a href="https://tw.linebiz.com/service/account-solutions/line-official-account/#2026PPROnlinePrice" target="_blank" rel="noopener">新版費用計算機</a>。</li>
+      <li>官方寫「一則群發訊息最多可以有3個對話框」，一次群發放 3 個對話框也只算 1 則。</li>
+      <li>官方寫「系統計算的時區為日本時區(GMT+9:00)，台灣時間23:00起傳送的訊息會被計算到隔日」，月底晚上 11 點後發的會算到下個月。</li>
+      <li>官方公告：LINE 後台 2026-10-28 早上 8 點到 11-02、以及 11-24 早上 8 點到 11-25，不能升級、降級或新購方案。要改方案請在 10-27 前做好。</li>
+      <li>每月穩定 7 萬則以上的帳號，官方另有「訊息費折抵」的會員計畫，這裡沒有算進去。</li>
+    </ul>
+  </div>
+
+  <footer>
+    <p>美業 AI 技能包 v0.5.0｜通用小工具｜<a href="index.html">回工具首頁</a>｜<a href="https://github.com/hourlight-skills/beauty-ai-skills/issues" target="_blank" rel="noopener">回報問題</a></p>
+    <p>資料查核日 2026-09-26｜官方來源：<a href="https://tw.linebiz.com/column/LINEOA-2026-Price-Plan/" target="_blank" rel="noopener">2026 價格調整公告</a>、<a href="https://tw.linebiz.com/service/account-solutions/line-official-account/" target="_blank" rel="noopener">LINE 官方帳號方案與費用</a>、<a href="https://tw.linebiz.com/faq/oa-price/message-price-list/" target="_blank" rel="noopener">訊息費用的計價方式</a>、<a href="https://tw.linebiz.com/faq/oa-price/how-to-calculate-message-expense/" target="_blank" rel="noopener">收費訊息如何計算</a></p>
+  </footer>
+</div>
+<script>
+(function(){
+var $=function(id){return document.getElementById(id);};
+function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;}
+function fmt(n){return Number(n).toLocaleString('zh-TW',{maximumFractionDigits:2});}
+// 官方數字（2026-09-26 查核，tw.linebiz.com/column/LINEOA-2026-Price-Plan/）
+var NEW_FROM='2026-11-01', DECIDE_BY='2026-10-27';
+var PLANS=[
+  {key:'light',name:'輕用量',free:200,oldFee:0,newFee:0,canBuy:false},
+  {key:'mid',name:'中用量',free:3000,oldFee:800,newFee:1000,canBuy:false},
+  {key:'high',name:'高用量',free:6000,oldFee:1200,newFee:1400,canBuy:true}
+];
+var TIER_CUT=50000, TIER1=0.2, TIER2=0.15, OLD_FIRST=0.2;
+var MAX_LEN=9;   // 最多 9 位數（1 億以下）
+
+// 新價加購費：超過免費則數後才算，前 50,000 則每則 0.2、第 50,001 則起每則 0.15
+function newExtra(over){if(over<=0)return 0;var a=Math.min(over,TIER_CUT),b=Math.max(0,over-TIER_CUT);return Math.round((a*TIER1+b*TIER2)*100)/100;}
+function planCost(p,n){
+  var over=Math.max(0,n-p.free);
+  if(over>0&&!p.canBuy)return {ok:false,over:over};
+  return {ok:true,over:over,oldFee:p.oldFee,oldExtraMax:Math.round(over*OLD_FIRST*100)/100,newFee:p.newFee,newExtra:newExtra(over)};
+}
+function cheapest(n){for(var i=0;i<PLANS.length;i++){var c=planCost(PLANS[i],n);if(c.ok)return {p:PLANS[i],c:c};}return null;}
+window.__lineCalc={planCost:planCost,cheapest:cheapest,PLANS:PLANS,newExtra:newExtra};
+
+function parseCount(raw){
+  var s=String(raw==null?'':raw).trim().replace(/[０-９]/g,function(d){return String.fromCharCode(d.charCodeAt(0)-0xFEE0);}).replace(/[,，\s]/g,'');
+  if(s==='')return {empty:true};
+  if(/^-/.test(s))return {err:'不能是負數'};
+  if(!/^\d+$/.test(s))return {err:'請只填整數數字'};
+  if(s.replace(/^0+(?=\d)/,'').length>MAX_LEN)return {err:'數字太大了，請確認'};
+  return {v:parseInt(s,10)};
+}
+function mark(input,r){input.classList.toggle('err',!!r.err);}
+
+function dayInfo(){
+  var d=$('day').value, m=$('dayMsg');m.textContent='';m.className='note';
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(d)){m.textContent='沒有填日期：兩種價格都列出來，自己對照。';return null;}
+  if(d>=NEW_FROM){m.textContent='這一天適用 2026-11-01 起的新價。';m.className='warn';return 'new';}
+  var ms=(new Date(DECIDE_BY+'T00:00:00')-new Date(d+'T00:00:00'))/86400000, left=Math.round(ms);
+  if(left>0){m.textContent='這一天還是舊價（到 2026-10-31）。離 10-27 決定方案的期限還有 '+left+' 天。';m.className='ok';}
+  else if(left===0){m.textContent='這一天還是舊價，而且今天就是 10-27 決定方案的最後一天。';m.className='bad';}
+  else{m.textContent='這一天還是舊價（到 2026-10-31），但已經過了 10-27：如果還在中用量或高用量，官方視為同意 11-01 起的新價。';m.className='bad';}
+  return 'old';
+}
+
+function getCount(){
+  var mode=$('modeB').checked?'b':'a', msg=$('inMsg');msg.textContent='';msg.className='note';
+  $('boxA').hidden=mode!=='a';$('boxB').hidden=mode!=='b';
+  if(mode==='b'){var r=parseCount($('direct').value);mark($('direct'),r);mark($('friends'),{});mark($('times'),{});
+    if(r.err){msg.textContent='每月則數：'+r.err;msg.className='bad';return null;}
+    if(r.empty){msg.textContent='請填每月預計發出的訊息則數。';return null;}
+    return {n:r.v,mode:'b'};}
+  var f=parseCount($('friends').value),t=parseCount($('times').value);mark($('friends'),f);mark($('times'),t);mark($('direct'),{});
+  var errs=[];if(f.err)errs.push('目標好友數：'+f.err);if(t.err)errs.push('群發次數：'+t.err);
+  if(!f.err&&!t.err&&!t.empty&&t.v>300){errs.push('群發次數：一個月超過 300 次，請確認');$('times').classList.add('err');}
+  if(errs.length){msg.textContent=errs.join('；');msg.className='bad';return null;}
+  if(f.empty||t.empty){msg.textContent='請填目標好友數和每月群發幾次。';return null;}
+  return {n:f.v*t.v,mode:'a',friends:f.v,times:t.v};
+}
+
+function money(x){return fmt(x)+' 元';}
+function renderPlans(n,period){
+  var box=$('plans');box.textContent='';var best=$('best');best.textContent='';
+  if(n==null){best.appendChild(el('p','note','上面填好就會出現。'));return;}
+  var ch=cheapest(n);
+  PLANS.forEach(function(p){
+    var c=planCost(p,n),card=el('div','plan'+(ch&&ch.p===p?' best':''));card.setAttribute('data-plan',p.key);
+    var h=el('h3','',p.name);if(ch&&ch.p===p)h.appendChild(el('span','tag','最省'));card.appendChild(h);
+    var dl=el('dl');function add(k,v,cls,attr){dl.appendChild(el('dt','',k));var dd=el('dd',cls||'',v);if(attr)dd.setAttribute('data-k',attr);dl.appendChild(dd);return dd;}
+    add('每月免費訊息',fmt(p.free)+' 則');
+    if(!c.ok){add('這個月','超過免費 '+fmt(c.over)+' 則，不可加購，發不出去','bad','status');}
+    else{
+      add('這個月',c.over>0?'超過免費 '+fmt(c.over)+' 則，要加購':'在免費則數內，不用加購',c.over>0?'warn':'ok','status');
+      var o=add('2026-10-31 以前',c.over>0?money(c.oldFee)+' ＋ 加購最多約 '+money(c.oldExtraMax):money(c.oldFee),'','old');
+      var nw=add('2026-11-01 起',c.over>0?money(c.newFee+c.newExtra)+'（月費 '+money(c.newFee)+' ＋ 加購 '+money(c.newExtra)+'）':money(c.newFee),'','new');
+      if(period==='old')o.classList.add('now');if(period==='new')nw.classList.add('now');
+    }
+    card.appendChild(dl);box.appendChild(card);
+  });
+  if(!ch){best.appendChild(el('p','bad','三個方案都放不下這麼多則。'));return;}
+  var t=el('p','ok');t.setAttribute('data-k','best');
+  t.textContent='最省的是「'+ch.p.name+'」：2026-10-31 以前 '+(ch.c.over>0?money(ch.c.oldFee)+' ＋ 加購最多約 '+money(ch.c.oldExtraMax):money(ch.c.oldFee))+'；2026-11-01 起 '+money(ch.c.newFee+ch.c.newExtra)+'。';
+  best.appendChild(t);
+}
+
+function renderSave(cnt){
+  var s=$('save'),m=$('partMsg');s.textContent='';m.textContent='';m.className='note';
+  var r=parseCount($('part').value);mark($('part'),r);
+  if(!cnt||cnt.mode!=='a'){m.textContent='這一格要先在上面用「好友數 × 群發次數」填好才能算。';return;}
+  if(r.err){m.textContent='只發給幾個人：'+r.err;m.className='bad';return;}
+  if(r.empty){m.textContent='填了就會算。';return;}
+  if(r.v>cnt.friends){m.textContent='只發給的人數不能比目標好友數多（目前 '+fmt(cnt.friends)+' 人）。';m.className='bad';$('part').classList.add('err');return;}
+  var n2=r.v*cnt.times,a=cheapest(cnt.n),b=cheapest(n2);
+  var p=el('p','big','每月少發 '+fmt(cnt.n-n2)+' 則');p.setAttribute('data-k','fewer');s.appendChild(p);
+  s.appendChild(el('p','note','全部發：每月 '+fmt(cnt.n)+' 則；只發 '+fmt(r.v)+' 人：每月 '+fmt(n2)+' 則。'));
+  if(!b){s.appendChild(el('p','bad','就算只發這些人，三個方案都放不下。'));return;}
+  var newA=a?a.c.newFee+a.c.newExtra:null,newB=b.c.newFee+b.c.newExtra;
+  var line=el('p','ok');line.setAttribute('data-k','saved');
+  if(a){var d=newA-newB;line.textContent='2026-11-01 起：最省方案從「'+a.p.name+'」'+money(newA)+' 變成「'+b.p.name+'」'+money(newB)+'，每月省 '+money(d)+'，一年約 '+money(d*12)+'。';}
+  else line.textContent='2026-11-01 起：只發這些人可以用「'+b.p.name+'」，每月 '+money(newB)+'。';
+  s.appendChild(line);
+  if(a&&a.p===b.p&&a.c.over===0)s.appendChild(el('p','note','兩種都在同一個方案的免費則數內，月費一樣，差別是留下更多免費則數可以用。'));
+  if(a){var ol=el('p','note');ol.setAttribute('data-k','savedOld');
+    var oa=a.c.oldFee,ob=b.c.oldFee;ol.textContent='2026-10-31 以前：月費從 '+money(oa)+' 變成 '+money(ob)+(a.c.over>0?'，另外還少掉最多約 '+money(a.c.oldExtraMax-b.c.oldExtraMax)+' 的加購費':'')+'。';s.appendChild(ol);}
+}
+
+function calc(){
+  var period=dayInfo(),cnt=getCount(),tot=$('total');tot.textContent='';
+  if(cnt){var b=el('div','big','每月約 '+fmt(cnt.n)+' 則');b.setAttribute('data-k','count');tot.appendChild(b);
+    if(cnt.mode==='a')tot.appendChild(el('p','note',fmt(cnt.friends)+' 人 × '+fmt(cnt.times)+' 次 ＝ '+fmt(cnt.n)+' 則'));}
+  renderPlans(cnt?cnt.n:null,period);renderSave(cnt);
+}
+['friends','times','direct','part','day'].forEach(function(id){$(id).addEventListener('input',calc);$(id).addEventListener('change',calc);});
+$('modeA').addEventListener('change',calc);$('modeB').addEventListener('change',calc);
+$('ex1').onclick=function(){$('modeA').checked=true;$('friends').value='500';$('times').value='4';$('part').value='';calc();};
+$('ex2').onclick=function(){$('modeA').checked=true;$('friends').value='2000';$('times').value='4';$('part').value='700';calc();};
+var t=new Date(),pad=function(x){return (x<10?'0':'')+x;};$('day').value=t.getFullYear()+'-'+pad(t.getMonth()+1)+'-'+pad(t.getDate());
+calc();
+})();
+</script>
+</body>
+</html>

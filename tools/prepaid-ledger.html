@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>儲值金／套票餘額本｜美業 AI 技能包</title>
+<style>
+:root{--bg:#F0EEE9;--card:#fff;--ink:#3D3835;--mute:#6E675F;--rose:#7D4351;--teal:#007B7F;--orange:#E88A2C;--pink:#FFCCCC;--line:#DDD6CE;--red:#B42318}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.7}
+.wrap{max-width:980px;margin:0 auto;padding:0 16px 64px}
+.keep{position:sticky;top:0;z-index:5;background:#FFF4E0;border-bottom:2px solid var(--orange);color:var(--ink);font-size:.88rem;font-weight:700;padding:8px 16px;margin:0 -16px 16px}
+h1{font-size:1.6rem;margin:0 0 4px;color:var(--rose)}
+h2{font-size:1.05rem;margin:0 0 10px;color:var(--teal)}
+.sub{color:var(--mute);margin:0 0 16px}
+.card{background:var(--card);border-radius:18px;padding:20px;box-shadow:0 2px 10px rgba(125,67,81,.08);margin-bottom:18px}
+.note{color:var(--mute);font-size:.88rem}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px}
+@media (min-width:760px){.grid{grid-template-columns:1fr 1fr 1fr 1fr}}
+.grid .wide{grid-column:1/-1}
+label{display:block;font-size:.85rem;font-weight:700;min-width:0}
+input,select{display:block;width:100%;min-height:44px;margin-top:2px;font:inherit;font-weight:400;padding:6px 8px;border:2px solid var(--line);border-radius:10px;background:#FFFCFA;font-size:16px;color:var(--ink)}
+input:focus,select:focus{outline:none;border-color:var(--teal)}
+input.err{border-color:var(--red);background:#FDE2E0}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}
+button{font:inherit;font-weight:700;border:0;border-radius:999px;padding:10px 20px;min-height:44px;cursor:pointer}
+.primary{background:var(--rose);color:#fff}
+.ghost{background:#fff;color:var(--teal);border:2px solid var(--teal)}
+.small{padding:6px 14px;font-size:.85rem}
+.bad{color:var(--red);font-weight:700}.ok{color:var(--teal);font-weight:700}
+.alert{border:2px solid var(--orange);background:#FFF4E0;border-radius:12px;padding:10px 12px;margin:8px 0;font-size:.92rem}
+.hint{border-left:4px solid var(--teal);background:#EEF7F7;border-radius:8px;padding:8px 12px;margin-top:10px;font-size:.9rem}
+.tbl{overflow-x:auto;margin-top:6px}
+[hidden]{display:none!important}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:.9rem}
+td:first-child,td:nth-child(2){white-space:nowrap}
+th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top;word-break:break-word}
+th{color:var(--rose);white-space:nowrap}
+td.n{text-align:right;white-space:nowrap}
+.slip{border:2px dashed var(--line);border-radius:14px;padding:16px;margin-top:10px}
+.slip h3{margin:0 0 4px;color:var(--rose)}
+button:focus-visible,input:focus-visible,a:focus-visible,select:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+footer{color:var(--mute);font-size:.8rem;margin-top:24px}
+footer a,.card a{color:var(--teal)}
+@media print{
+  body{background:#fff}
+  .keep,.wrap>*:not(#slipCard),#slipCard>*:not(#slip),.noprint{display:none!important}
+  #slipCard{box-shadow:none;padding:0}
+  .slip{border:0}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="keep" id="keep">資料只在這台電腦的這個瀏覽器。換電腦或清瀏覽器前，請先到最下面按「下載備份」。<span id="lastBk"></span></p>
+  <h1>儲值金／套票餘額本</h1>
+  <p class="sub">給店家自己用的小本子：客人買了儲值金或套票，每次來店扣一筆，自動算出還剩多少。<b>只記客編，不要填姓名、電話。</b>資料不會上傳，也不需要登入。</p>
+  <p id="store" class="bad" hidden>這個瀏覽器不讓網頁存資料（常見原因：無痕模式）。現在可以照常用，但關掉就會不見，請先按最下面的「下載備份」。</p>
+
+  <div class="card">
+    <h2>① 記一筆購買（儲值或套票）</h2>
+    <p class="note">「實付金額」只填客人真的付的錢。送的堂數或金額填在「贈送」那幾格，<b>不要算進實付</b>。</p>
+    <div class="grid">
+      <label>客編<input id="pCid" autocomplete="off" placeholder="例：C023" maxlength="30"></label>
+      <label>購買日期<input id="pDate" type="date"></label>
+      <label class="wide">方案名稱<input id="pPlan" autocomplete="off" placeholder="例：臉部保養 10 堂" maxlength="200"></label>
+      <label>實付金額（元）<input id="pPaid" inputmode="numeric" autocomplete="off" placeholder="例：12000"></label>
+      <label>買的堂數（選填）<input id="pSess" inputmode="numeric" autocomplete="off" placeholder="例：10"></label>
+      <label>贈送堂數（選填）<input id="pGSess" inputmode="numeric" autocomplete="off" placeholder="例：2"></label>
+      <label>贈送金額（選填，元）<input id="pGAmt" inputmode="numeric" autocomplete="off" placeholder="例：1000"></label>
+      <label class="wide">贈送內容說明（選填）<input id="pGift" autocomplete="off" placeholder="例：送 2 堂肩頸" maxlength="200"></label>
+      <label class="wide">這份契約的總金額（選填，元；沒填就當作等於這筆實付）<input id="pTotal" inputmode="numeric" autocomplete="off" placeholder="例：分兩期各付 6000，這裡填 12000"></label>
+    </div>
+    <p class="note" id="totalNote">書面契約看的是「消費總金額」：<b>分幾次付款也看總金額</b>。分期付的話，每一期都把整份契約的總金額填在上面這格。</p>
+    <div class="row"><button type="button" class="primary" id="pAdd">記下這筆購買</button><button type="button" class="ghost" id="ex">放一組例子</button></div>
+    <p id="pMsg" role="status"></p>
+    <div id="pHint"></div>
+  </div>
+
+  <div class="card">
+    <h2>② 記一筆使用（客人來店扣抵）</h2>
+    <p class="note">扣的是哪一種就填哪一格，其他留空。套票扣堂數時，建議也把「這一堂折多少實付金額」填進去（例：10 堂 12,000 元，一堂就是 1,200），剩餘實付餘額才會準。</p>
+    <div class="grid">
+      <label>客編<input id="uCid" autocomplete="off" placeholder="例：C023" maxlength="30" list="cidList"></label>
+      <label>來店日期<input id="uDate" type="date"></label>
+      <label>扣實付金額（元）<input id="uAmt" inputmode="numeric" autocomplete="off" placeholder="例：1200"></label>
+      <label>扣堂數<input id="uSess" inputmode="numeric" autocomplete="off" placeholder="例：1"></label>
+      <label>扣贈送堂數<input id="uGSess" inputmode="numeric" autocomplete="off"></label>
+      <label>扣贈送金額（元）<input id="uGAmt" inputmode="numeric" autocomplete="off"></label>
+      <label class="wide">備註（選填）<input id="uNote" autocomplete="off" placeholder="例：做臉" maxlength="200"></label>
+    </div>
+    <datalist id="cidList"></datalist>
+    <div class="row"><button type="button" class="primary" id="uAdd">記下這筆使用</button></div>
+    <p id="uMsg" role="status"></p>
+  </div>
+
+  <div class="card">
+    <h2>③ 每位客編還剩多少</h2>
+    <p class="hint" id="guardNote">這裡只能用妳記下的資料粗略提醒；是全額預付還是分期、要保障多少，照官方第二十點原文與契約判斷，沒亮不代表不用確認。會亮提醒的兩種情形：①有一筆實付逾 5 萬元；②這位客編已付但還沒用掉的實付金額，累計逾 5 萬元。</p>
+    <div id="alerts"></div>
+    <div id="sum"><p class="note">記了購買就會出現。</p></div>
+    <p class="note">退費請照契約與主管機關規定，這裡不算。這張表只算「付了多少、用了多少、還剩多少」。</p>
+  </div>
+
+  <div class="card" id="slipCard">
+    <h2>④ 給客人看的餘額明細（只有客編）</h2>
+    <div class="row noprint">
+      <label style="flex:1;min-width:160px">選客編<select id="slipCid"><option value="">（先記一筆購買）</option></select></label>
+      <button type="button" class="ghost" id="print">列印這張</button>
+    </div>
+    <p class="note noprint">要傳給客人的話，截圖這一張就好。上面只會有客編，不會有姓名電話。</p>
+    <div id="slip" class="slip"><p class="note">選一個客編就會出現。</p></div>
+  </div>
+
+  <div class="card">
+    <h2>⑤ 全部紀錄（記錯了可以刪）</h2>
+    <p class="note" id="count"></p>
+    <div id="recs"></div>
+  </div>
+
+  <div class="card">
+    <h2>⑥ 備份與下載</h2>
+    <p class="note">備份檔是一個 .json 檔，存到隨身碟或雲端硬碟。換電腦時在新電腦按「匯入備份」選這個檔就回來了。<b>匯入會取代目前畫面上的全部紀錄。</b>最多 2,000 筆。</p>
+    <div class="row">
+      <button type="button" class="primary" id="bkDown">下載備份（.json）</button>
+      <button type="button" class="ghost" id="bkUp">匯入備份</button>
+      <input type="file" id="bkFile" accept=".json,application/json" hidden>
+    </div>
+    <div class="row">
+      <button type="button" class="ghost" id="csvSum">下載餘額總表（.csv）</button>
+      <button type="button" class="ghost" id="csvRec">下載全部紀錄（.csv）</button>
+    </div>
+    <p id="bkMsg" role="status"></p>
+  </div>
+
+  <footer>
+    <div>美業 AI 技能包 v0.5.0｜美業小工具｜<a href="index.html">回工具首頁</a>｜<a href="https://github.com/hourlight-skills/beauty-ai-skills/issues" target="_blank" rel="noopener">回報問題</a></div>
+    <div>資料查核日 2026-09-26｜官方來源：<a href="https://mohwlaw.mohw.gov.tw/FLAW/FLAWDAT0202.aspx?lsid=FL100463" target="_blank" rel="noopener">衛生福利部〈美容定型化契約應記載及不得記載事項〉</a>、<a href="https://dlacp.gov.taipei/News_Content.aspx?n=B5B08D52B7231896&amp;sms=87415A8B9CE81B16&amp;s=713ED811E975BBA1" target="_blank" rel="noopener">臺北市政府法務局〈美容機構無預警倒閉怎麼辦?〉</a></div>
+    <div>這個工具只記帳，不做法律判斷。契約與履約保障的問題，請洽所在縣市消保官或專業人士。</div>
+  </footer>
+</div>
+<script>
+(function(){
+'use strict';
+var KEY='hl-prepaid-ledger-v1', BKKEY='hl-prepaid-ledger-lastbackup';
+var GUARD=50000;           // 官方：預付金額「逾」新臺幣五萬元（超過才算，剛好 5 萬不算）
+var CONTRACT=10000;        // 官方：消費總金額新臺幣一萬元「以上」應簽訂書面契約
+var MAX_REC=2000, MAX_MONEY=10000000, MAX_SESS=1000;
+var LEN={plan:40,gift:60,note:80};
+var URL_MOHW='https://mohwlaw.mohw.gov.tw/FLAW/FLAWDAT0202.aspx?lsid=FL100463';
+var URL_TPE='https://dlacp.gov.taipei/News_Content.aspx?n=B5B08D52B7231896&sms=87415A8B9CE81B16&s=713ED811E975BBA1';
+var $=function(id){return document.getElementById(id);};
+function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;}
+function link(href,text){var a=el('a','',text);a.href=href;a.target='_blank';a.rel='noopener';return a;}
+function fmt(n){return Number(n).toLocaleString('zh-TW',{maximumFractionDigits:0});}
+var S={p:[],u:[]}, seq=0;
+
+// ── 驗證 ──
+function todayStr(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function checkCid(v){v=String(v==null?'':v).trim().toUpperCase();
+  if(!v)return {e:'請填客編（例：C023）'};
+  if(/[^\x20-\x7E]/.test(v))return {e:'客編只能用英文和數字（例：C023）。不要填姓名。'};
+  if(/^\+?\d{7,}$/.test(v.replace(/[\s-]/g,'')))return {e:'這看起來像電話號碼。請改用客編（例：C023），不要填電話。'};
+  if(!/^[A-Z0-9-]{1,12}$/.test(v))return {e:'客編只能用英文字母、數字和減號，最多 12 個字（例：C023）。'};
+  return {v:v};}
+function checkDate(v,label){v=String(v==null?'':v).trim();
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(v))return {e:'請選'+label};
+  var y=+v.slice(0,4),m=+v.slice(5,7),d=+v.slice(8,10),t=new Date(y,m-1,d);
+  if(y<2000||t.getFullYear()!==y||t.getMonth()!==m-1||t.getDate()!==d)return {e:label+'不是正確的日期'};
+  if(v>todayStr())return {e:label+'不能是未來的日子（記已經發生的事）'};
+  return {v:v};}
+function checkInt(v,label,opt,max){v=String(v==null?'':v).trim().replace(/[,，]/g,'');
+  if(v===''){return opt?{v:0}:{e:'請填'+label};}
+  if(/^-/.test(v))return {e:label+'不能是負數'};
+  if(!/^\d+$/.test(v))return {e:label+'只能填數字（整數，不要加文字或小數點）'};
+  var n=Number(v);if(n>max)return {e:label+'數字太大了，請檢查（上限 '+fmt(max)+'）'};
+  return {v:n};}
+function checkText(v,label,max,opt){v=String(v==null?'':v).trim();
+  if(!v&&!opt)return {e:'請填'+label};
+  if(v.length>max)return {e:label+'太長了，最多 '+max+' 個字（現在 '+v.length+' 個字）'};
+  return {v:v};}
+
+// ── 計算 ──
+function calc(cid,data){data=data||S;var r={paid:0,used:0,sess:0,sessUsed:0,gSess:0,gSessUsed:0,gAmt:0,gAmtUsed:0,hasSess:false,hasGSess:false,hasGAmt:false,first:null,np:0,nu:0,maxOne:0};
+  data.p.forEach(function(p){if(p.cid!==cid)return;r.np++;r.paid+=p.paid;if(p.paid>r.maxOne)r.maxOne=p.paid;r.sess+=p.sess;r.gSess+=p.gSess;r.gAmt+=p.gAmt;
+    if(p.sess>0)r.hasSess=true;if(p.gSess>0)r.hasGSess=true;if(p.gAmt>0)r.hasGAmt=true;if(!r.first||p.date<r.first)r.first=p.date;});
+  data.u.forEach(function(u){if(u.cid!==cid)return;r.nu++;r.used+=u.amt;r.sessUsed+=u.sess;r.gSessUsed+=u.gSess;r.gAmtUsed+=u.gAmt;});
+  r.bal=r.paid-r.used;r.sessBal=r.sess-r.sessUsed;r.gSessBal=r.gSess-r.gSessUsed;r.gAmtBal=r.gAmt-r.gAmtUsed;return r;}
+function negatives(r){var a=[];if(r.bal<0)a.push('實付餘額');if(r.sessBal<0)a.push('堂數');if(r.gSessBal<0)a.push('贈送堂數');if(r.gAmtBal<0)a.push('贈送金額');return a;}
+function cids(data){data=data||S;var s={};data.p.forEach(function(p){s[p.cid]=1;});data.u.forEach(function(u){s[u.cid]=1;});return Object.keys(s).sort();}
+function total(){return S.p.length+S.u.length;}
+
+// ── 儲存 ──
+function save(){var ok=true;try{localStorage.setItem(KEY,JSON.stringify({v:1,p:S.p,u:S.u}));}catch(e){ok=false;}$('store').hidden=ok;return ok;}
+function load(){try{return JSON.parse(localStorage.getItem(KEY)||'null');}catch(e){return null;}}
+
+// ── 清洗（匯入與讀取共用：只收固定欄位、一律當純文字） ──
+function cleanP(o){if(!o||typeof o!=='object')return null;var c=checkCid(o.cid),d=checkDate(o.date,'購買日期'),pl=checkText(o.plan,'方案名稱',LEN.plan),pa=checkInt(o.paid,'實付金額',false,MAX_MONEY),
+  s=checkInt(o.sess,'堂數',true,MAX_SESS),gs=checkInt(o.gSess,'贈送堂數',true,MAX_SESS),ga=checkInt(o.gAmt,'贈送金額',true,MAX_MONEY),g=checkText(o.gift,'贈送內容',LEN.gift,true),tt=checkInt(o.total,'契約總金額',true,MAX_MONEY);
+  if(c.e||d.e||pl.e||pa.e||s.e||gs.e||ga.e||g.e||tt.e)return null;var tot=tt.v||pa.v;if(tot<pa.v)return null;
+  return {id:'',cid:c.v,date:d.v,plan:pl.v,paid:pa.v,sess:s.v,gSess:gs.v,gAmt:ga.v,gift:g.v,total:tot};}
+function cleanU(o){if(!o||typeof o!=='object')return null;var c=checkCid(o.cid),d=checkDate(o.date,'來店日期'),a=checkInt(o.amt,'扣實付金額',true,MAX_MONEY),s=checkInt(o.sess,'扣堂數',true,MAX_SESS),
+  gs=checkInt(o.gSess,'扣贈送堂數',true,MAX_SESS),ga=checkInt(o.gAmt,'扣贈送金額',true,MAX_MONEY),n=checkText(o.note,'備註',LEN.note,true);
+  if(c.e||d.e||a.e||s.e||gs.e||ga.e||n.e)return null;if(!(a.v||s.v||gs.v||ga.v))return null;return {id:'',cid:c.v,date:d.v,amt:a.v,sess:s.v,gSess:gs.v,gAmt:ga.v,note:n.v};}
+function adopt(raw){if(!raw||typeof raw!=='object'||!Array.isArray(raw.p)||!Array.isArray(raw.u))return {e:'這個檔案不是這個工具的備份檔。'};
+  if(raw.p.length+raw.u.length>MAX_REC)return {e:'紀錄超過 '+fmt(MAX_REC)+' 筆，沒有匯入。'};
+  var d={p:[],u:[]},drop=0,n=0;
+  raw.p.forEach(function(o){var x=cleanP(o);if(x){x.id='p'+(++n);d.p.push(x);}else drop++;});
+  raw.u.forEach(function(o){var x=cleanU(o);if(x){x.id='u'+(++n);d.u.push(x);}else drop++;});
+  var bad=cids(d).filter(function(c){return negatives(calc(c,d)).length;});
+  if(bad.length)return {e:'這份備份裡有客編扣到變負數（'+bad.slice(0,5).join('、')+'），沒有匯入。'};
+  return {d:d,drop:drop,n:n};}
+
+// ── 畫面 ──
+function showErr(box,msg,inputs){box.textContent=msg;box.className='bad';(inputs||[]).forEach(function(i){i.classList.add('err');});}
+function clearErr(ids){ids.forEach(function(id){$(id).classList.remove('err');});}
+function render(){
+  var list=cids();
+  // datalist
+  var dl=$('cidList');dl.textContent='';list.forEach(function(c){var o=el('option');o.value=c;dl.appendChild(o);});
+  // 提醒＋總表
+  var al=$('alerts');al.textContent='';var sum=$('sum');sum.textContent='';
+  if(!list.length){sum.appendChild(el('p','note','記了購買就會出現。'));}
+  else{
+    var tb=el('div','tbl'),t=el('table'),hr=el('tr');
+    ['客編','實付累計','已使用','剩餘實付餘額','剩餘堂數','剩餘贈送',''].forEach(function(h){hr.appendChild(el('th','',h));});
+    var th=el('thead');th.appendChild(hr);t.appendChild(th);var bd=el('tbody');
+    list.forEach(function(c){var r=calc(c),tr=el('tr');tr.setAttribute('data-cid',c);
+      tr.appendChild(el('td','',c));
+      [['paid',fmt(r.paid)+' 元'],['used',fmt(r.used)+' 元'],['bal',fmt(r.bal)+' 元'],['sess',r.hasSess?fmt(r.sessBal)+' 堂':'—']].forEach(function(x){var td=el('td','n',x[1]);td.setAttribute('data-k',x[0]);tr.appendChild(td);});
+      var g=[];if(r.hasGSess)g.push(fmt(r.gSessBal)+' 堂');if(r.hasGAmt)g.push(fmt(r.gAmtBal)+' 元');var gt=el('td','n',g.length?g.join('、'):'—');gt.setAttribute('data-k','gift');tr.appendChild(gt);
+      var bt=el('button','ghost small','看明細');bt.type='button';bt.onclick=function(){$('slipCid').value=c;renderSlip();$('slipCard').scrollIntoView({behavior:'smooth'});};
+      var td=el('td');td.appendChild(bt);tr.appendChild(td);bd.appendChild(tr);
+      var oneBig=r.maxOne>GUARD, leftBig=r.bal>GUARD;   // ①單筆實付逾 5 萬（全額預付那種）②已付未用累計逾 5 萬（按期給付那種）
+      if(oneBig||leftBig){var a=el('div','alert');a.setAttribute('data-guard',c);a.setAttribute('data-why',(oneBig?'one ':'')+(leftBig?'left':''));
+        var why=[];if(oneBig)why.push('有一筆實付 '+fmt(r.maxOne)+' 元，逾 5 萬元');if(leftBig)why.push('已付但還沒用掉的實付金額累計 '+fmt(r.bal)+' 元，逾 5 萬元');
+        a.appendChild(el('b','',c+'：'+why.join('；')+'。'));a.appendChild(el('br'));
+        a.appendChild(document.createTextNode('官方說明寫到：「消費者以全額預付方式給付對價，且金額逾新臺幣五萬元者，或依繼續性美容服務按期給付，累計未接受服務及未提領商品之預付金額逾新臺幣五萬元者，企業經營者應就超過金額之部分，提供履約保障。」建議確認履約保障。'));
+        a.appendChild(el('br'));a.appendChild(document.createTextNode('原文：'));a.appendChild(link(URL_MOHW,'衛福部應記載事項第二十點'));a.appendChild(document.createTextNode('、'));a.appendChild(link(URL_TPE,'臺北市法務局說明'));
+        al.appendChild(a);}
+    });
+    t.appendChild(bd);tb.appendChild(t);sum.appendChild(tb);
+  }
+  // 明細下拉
+  var sel=$('slipCid'),cur=sel.value;sel.textContent='';
+  if(!list.length){var o0=el('option','','（先記一筆購買）');o0.value='';sel.appendChild(o0);}
+  else list.forEach(function(c){var o=el('option','',c);o.value=c;sel.appendChild(o);});
+  if(cur&&list.indexOf(cur)>=0)sel.value=cur;
+  renderSlip();renderRecs();
+}
+function mkTable(heads,rows){var w=el('div','tbl'),t=el('table'),h=el('tr');heads.forEach(function(x){h.appendChild(el('th','',x));});var th=el('thead');th.appendChild(h);t.appendChild(th);
+  var b=el('tbody');rows.forEach(function(r){var tr=el('tr');r.forEach(function(c){if(c&&c.nodeType){var td=el('td');td.appendChild(c);tr.appendChild(td);}else tr.appendChild(el('td',typeof c==='number'?'n':'',typeof c==='number'?fmt(c):c));});b.appendChild(tr);});t.appendChild(b);w.appendChild(t);return w;}
+function giftTxt(p){var g=[];if(p.gSess)g.push(p.gSess+' 堂');if(p.gAmt)g.push(fmt(p.gAmt)+' 元');if(p.gift)g.push(p.gift);return g.join('／')||'—';}
+function renderSlip(){var box=$('slip');box.textContent='';var c=$('slipCid').value;
+  if(!c){box.appendChild(el('p','note','選一個客編就會出現。'));return;}
+  var r=calc(c);
+  box.appendChild(el('h3','','儲值金／套票餘額明細'));
+  box.appendChild(el('p','','客編：'+c+'　　製表日：'+todayStr()));
+  var sm=el('p');sm.setAttribute('data-k','slipBal');sm.appendChild(el('b','','剩餘實付餘額：'+fmt(r.bal)+' 元'));
+  if(r.hasSess)sm.appendChild(document.createTextNode('　剩餘堂數：'+fmt(r.sessBal)+' 堂'));
+  if(r.hasGSess)sm.appendChild(document.createTextNode('　剩餘贈送堂數：'+fmt(r.gSessBal)+' 堂'));
+  if(r.hasGAmt)sm.appendChild(document.createTextNode('　剩餘贈送金額：'+fmt(r.gAmtBal)+' 元'));
+  box.appendChild(sm);
+  box.appendChild(el('p','note','實付累計 '+fmt(r.paid)+' 元，已使用 '+fmt(r.used)+' 元。'));
+  box.appendChild(el('b','','購買紀錄'));
+  box.appendChild(mkTable(['日期','方案','實付','堂數','贈送（不算在實付裡）'],S.p.filter(function(p){return p.cid===c;}).map(function(p){return [p.date,p.plan,p.paid,p.sess?p.sess+' 堂':'—',giftTxt(p)];})));
+  var us=S.u.filter(function(u){return u.cid===c;});
+  box.appendChild(el('b','','使用紀錄'));
+  if(!us.length)box.appendChild(el('p','note','還沒有使用紀錄。'));
+  else box.appendChild(mkTable(['日期','扣實付','扣堂數','扣贈送','備註'],us.map(function(u){var g=[];if(u.gSess)g.push(u.gSess+' 堂');if(u.gAmt)g.push(fmt(u.gAmt)+' 元');return [u.date,u.amt?fmt(u.amt)+' 元':'—',u.sess?u.sess+' 堂':'—',g.join('、')||'—',u.note||''];})));
+  box.appendChild(el('p','note','這張只列出紀錄與餘額，不是退費金額。退費請照契約與主管機關規定，這裡不算。'));
+}
+function renderRecs(){var box=$('recs');box.textContent='';$('count').textContent='目前 '+fmt(total())+' 筆（上限 '+fmt(MAX_REC)+' 筆）。';
+  if(!total()){box.appendChild(el('p','note','還沒有紀錄。'));return;}
+  var rows=[];
+  S.p.forEach(function(p){rows.push({d:p.date,k:'購買',x:p,txt:p.plan+'｜實付 '+fmt(p.paid)+' 元'+(p.total>p.paid?'｜契約總金額 '+fmt(p.total)+' 元':'')+(p.sess?'｜'+p.sess+' 堂':'')+(giftTxt(p)!=='—'?'｜贈送 '+giftTxt(p):'')});});
+  S.u.forEach(function(u){var a=[];if(u.amt)a.push('扣 '+fmt(u.amt)+' 元');if(u.sess)a.push('扣 '+u.sess+' 堂');if(u.gSess)a.push('扣贈送 '+u.gSess+' 堂');if(u.gAmt)a.push('扣贈送 '+fmt(u.gAmt)+' 元');
+    rows.push({d:u.date,k:'使用',x:u,txt:a.join('、')+(u.note?'｜'+u.note:'')});});
+  rows.sort(function(a,b){return a.d<b.d?1:a.d>b.d?-1:0;});
+  box.appendChild(mkTable(['日期','客編','種類','內容',''],rows.map(function(r){var b=el('button','ghost small','刪掉');b.type='button';b.onclick=function(){del(r.x.id);};return [r.d,r.x.cid,r.k,r.txt,b];})));
+}
+function del(id){var d={p:S.p.filter(function(p){return p.id!==id;}),u:S.u.filter(function(u){return u.id!==id;})};
+  var rec=S.p.concat(S.u).filter(function(x){return x.id===id;})[0];if(!rec)return;
+  if(negatives(calc(rec.cid,d)).length){$('bkMsg').textContent='';alertMsg('刪掉這筆購買後，'+rec.cid+' 會扣到變負數。請先刪掉那一筆使用紀錄。');return;}
+  S=d;save();render();}
+function alertMsg(t){var m=$('count');m.textContent=t;m.className='bad';setTimeout(function(){m.className='note';renderRecs();},4000);}
+
+// ── 新增 ──
+$('pAdd').onclick=function(){var ids=['pCid','pDate','pPlan','pPaid','pSess','pGSess','pGAmt','pGift','pTotal'];clearErr(ids);var m=$('pMsg'),h=$('pHint');h.textContent='';
+  if(total()>=MAX_REC)return showErr(m,'已經 '+fmt(MAX_REC)+' 筆了。請先下載備份，再刪掉舊的紀錄。');
+  var chk=[['pCid',checkCid($('pCid').value)],['pDate',checkDate($('pDate').value,'購買日期')],['pPlan',checkText($('pPlan').value,'方案名稱',LEN.plan)],['pPaid',checkInt($('pPaid').value,'實付金額',false,MAX_MONEY)],
+    ['pSess',checkInt($('pSess').value,'買的堂數',true,MAX_SESS)],['pGSess',checkInt($('pGSess').value,'贈送堂數',true,MAX_SESS)],['pGAmt',checkInt($('pGAmt').value,'贈送金額',true,MAX_MONEY)],['pGift',checkText($('pGift').value,'贈送內容說明',LEN.gift,true)],['pTotal',checkInt($('pTotal').value,'契約總金額',true,MAX_MONEY)]];
+  var bad=chk.filter(function(x){return x[1].e;});if(bad.length)return showErr(m,bad[0][1].e,bad.map(function(x){return $(x[0]);}));
+  var v={};chk.forEach(function(x){v[x[0]]=x[1].v;});
+  if(!v.pPaid&&!v.pSess&&!v.pGSess&&!v.pGAmt)return showErr(m,'這筆沒有金額也沒有堂數，請至少填一個。',[$('pPaid')]);
+  if(v.pTotal&&v.pTotal<v.pPaid)return showErr(m,'契約總金額比這筆實付還少，請檢查（分期的話，總金額要填整份契約的金額）。',[$('pTotal')]);
+  var p={id:'p'+(++seq),cid:v.pCid,date:v.pDate,plan:v.pPlan,paid:v.pPaid,sess:v.pSess,gSess:v.pGSess,gAmt:v.pGAmt,gift:v.pGift,total:v.pTotal||v.pPaid};
+  S.p.push(p);var ok=save();render();
+  m.className='ok';m.textContent='已記下：'+p.cid+'　實付 '+fmt(p.paid)+' 元。'+(ok?'':'（這個瀏覽器存不進去，關掉就會不見。）');
+  if(p.total>=CONTRACT){var d=el('div','hint');d.setAttribute('data-k','contract');
+    d.appendChild(document.createTextNode('這份契約總金額 '+fmt(p.total)+' 元（1 萬元以上）。官方應記載事項寫到：「消費總金額為新臺幣一萬元以上者，應簽訂書面契約」。分幾次付款也看總金額。建議確認有沒有簽書面契約。原文：'));
+    d.appendChild(link(URL_MOHW,'衛福部〈美容定型化契約應記載及不得記載事項〉第三點'));h.appendChild(d);}
+  ['pPlan','pPaid','pSess','pGSess','pGAmt','pGift','pTotal'].forEach(function(id){$(id).value='';});
+};
+$('uAdd').onclick=function(){var ids=['uCid','uDate','uAmt','uSess','uGSess','uGAmt','uNote'];clearErr(ids);var m=$('uMsg');
+  if(total()>=MAX_REC)return showErr(m,'已經 '+fmt(MAX_REC)+' 筆了。請先下載備份，再刪掉舊的紀錄。');
+  var chk=[['uCid',checkCid($('uCid').value)],['uDate',checkDate($('uDate').value,'來店日期')],['uAmt',checkInt($('uAmt').value,'扣實付金額',true,MAX_MONEY)],['uSess',checkInt($('uSess').value,'扣堂數',true,MAX_SESS)],
+    ['uGSess',checkInt($('uGSess').value,'扣贈送堂數',true,MAX_SESS)],['uGAmt',checkInt($('uGAmt').value,'扣贈送金額',true,MAX_MONEY)],['uNote',checkText($('uNote').value,'備註',LEN.note,true)]];
+  var bad=chk.filter(function(x){return x[1].e;});if(bad.length)return showErr(m,bad[0][1].e,bad.map(function(x){return $(x[0]);}));
+  var v={};chk.forEach(function(x){v[x[0]]=x[1].v;});
+  if(!v.uAmt&&!v.uSess&&!v.uGSess&&!v.uGAmt)return showErr(m,'要扣什麼？請至少填一格（金額或堂數）。',[$('uAmt'),$('uSess')]);
+  var r0=calc(v.uCid);if(!r0.np)return showErr(m,'找不到客編 '+v.uCid+' 的購買紀錄。請先在上面記一筆購買。',[$('uCid')]);
+  if(v.uDate<r0.first)return showErr(m,'來店日期比這位客編第一次購買（'+r0.first+'）還早，請檢查日期。',[$('uDate')]);
+  var u={id:'u'+(++seq),cid:v.uCid,date:v.uDate,amt:v.uAmt,sess:v.uSess,gSess:v.uGSess,gAmt:v.uGAmt,note:v.uNote};
+  var neg=negatives(calc(u.cid,{p:S.p,u:S.u.concat([u])}));
+  if(neg.length){var why=[];if(neg.indexOf('實付餘額')>=0)why.push('實付餘額只剩 '+fmt(r0.bal)+' 元');if(neg.indexOf('堂數')>=0)why.push('堂數只剩 '+fmt(r0.sessBal)+' 堂');
+    if(neg.indexOf('贈送堂數')>=0)why.push('贈送堂數只剩 '+fmt(r0.gSessBal)+' 堂');if(neg.indexOf('贈送金額')>=0)why.push('贈送金額只剩 '+fmt(r0.gAmtBal)+' 元');
+    return showErr(m,'扣不下去：'+u.cid+' 的'+why.join('、')+'。沒有記下這筆，請檢查金額或堂數。',[$('uAmt'),$('uSess')]);}
+  S.u.push(u);var ok=save();render();var r=calc(u.cid);
+  m.className='ok';m.textContent='已記下：'+u.cid+' 剩餘實付餘額 '+fmt(r.bal)+' 元'+(r.hasSess?'、剩 '+fmt(r.sessBal)+' 堂':'')+'。'+(ok?'':'（這個瀏覽器存不進去，關掉就會不見。）');
+  ['uAmt','uSess','uGSess','uGAmt','uNote'].forEach(function(id){$(id).value='';});
+};
+$('ex').onclick=function(){var t=todayStr();
+  var ex=adopt({p:[{cid:'C023',date:t,plan:'臉部保養 10 堂（例子）',paid:12000,sess:10,gSess:2,gAmt:0,gift:'送 2 堂肩頸'},{cid:'C051',date:t,plan:'儲值 60,000 元（例子）',paid:60000,sess:0,gSess:0,gAmt:6000,gift:'儲值送 6,000'}],
+    u:[{cid:'C023',date:t,amt:1200,sess:1,gSess:0,gAmt:0,note:'做臉'},{cid:'C051',date:t,amt:3000,sess:0,gSess:0,gAmt:0,note:''}]});
+  if(ex.d){ex.d.p.forEach(function(p){p.id='p'+(++seq);S.p.push(p);});ex.d.u.forEach(function(u){u.id='u'+(++seq);S.u.push(u);});save();render();}};
+$('slipCid').onchange=renderSlip;
+$('print').onclick=function(){if(!$('slipCid').value)return;window.print();};
+
+// ── 下載 ──
+function dl(name,text,type){var u=URL.createObjectURL(new Blob([text],{type:type})),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u);},10000);}
+// CSV：開頭是 = + - @、tab、換行的格子前面加 ' ，避免被試算表當公式
+function cell(v){v=String(v==null?'':v);if(/^[=+\-@\t\r\n]/.test(v))v="'"+v;return /[",\r\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;}
+function csv(rows){return '﻿'+rows.map(function(r){return r.map(cell).join(',');}).join('\r\n');}
+function stamp(){return todayStr().replace(/-/g,'');}
+$('bkDown').onclick=function(){dl('儲值金餘額本_備份_'+stamp()+'.json',JSON.stringify({tool:'prepaid-ledger',v:1,savedAt:todayStr(),p:S.p,u:S.u},null,1),'application/json');
+  try{localStorage.setItem(BKKEY,todayStr());}catch(e){}showLastBk();$('bkMsg').className='ok';$('bkMsg').textContent='已下載備份（'+fmt(total())+' 筆）。請把檔案存到隨身碟或雲端。';};
+$('csvSum').onclick=function(){var rows=[['客編','實付累計','已使用','剩餘實付餘額','剩餘堂數','剩餘贈送堂數','剩餘贈送金額']];
+  cids().forEach(function(c){var r=calc(c);rows.push([c,r.paid,r.used,r.bal,r.hasSess?r.sessBal:'',r.hasGSess?r.gSessBal:'',r.hasGAmt?r.gAmtBal:'']);});
+  dl('儲值金餘額總表_'+stamp()+'.csv',csv(rows),'text/csv;charset=utf-8');$('bkMsg').className='ok';$('bkMsg').textContent='已下載餘額總表。退費金額這裡不算。';};
+$('csvRec').onclick=function(){var rows=[['種類','客編','日期','方案或備註','實付金額','堂數','贈送堂數','贈送金額','贈送內容','契約總金額','扣實付金額','扣堂數','扣贈送堂數','扣贈送金額']];
+  S.p.forEach(function(p){rows.push(['購買',p.cid,p.date,p.plan,p.paid,p.sess||'',p.gSess||'',p.gAmt||'',p.gift,p.total,'','','','']);});
+  S.u.forEach(function(u){rows.push(['使用',u.cid,u.date,u.note,'','','','','','',u.amt||'',u.sess||'',u.gSess||'',u.gAmt||'']);});
+  dl('儲值金全部紀錄_'+stamp()+'.csv',csv(rows),'text/csv;charset=utf-8');$('bkMsg').className='ok';$('bkMsg').textContent='已下載全部紀錄。';};
+$('bkUp').onclick=function(){$('bkFile').value='';$('bkFile').click();};
+$('bkFile').onchange=function(){var f=this.files&&this.files[0],m=$('bkMsg');if(!f)return;
+  if(f.size>2000000)return showErr(m,'這個檔案太大了，不像是這個工具的備份檔。');
+  var rd=new FileReader();rd.onload=function(){var raw;try{raw=JSON.parse(String(rd.result));}catch(e){return showErr(m,'這個檔案打不開，不是這個工具的備份檔。');}
+    var r=adopt(raw);if(r.e)return showErr(m,r.e);S=r.d;seq=r.n;var ok=save();render();
+    m.className='ok';m.textContent='已匯入 '+fmt(total())+' 筆'+(r.drop?'，另有 '+r.drop+' 筆格式不對，沒有收':'')+'。'+(ok?'':'但這個瀏覽器存不進去，關掉就會不見。');};
+  rd.onerror=function(){showErr(m,'讀不到這個檔案。');};rd.readAsText(f);};
+function showLastBk(){var t=null;try{t=localStorage.getItem(BKKEY);}catch(e){}$('lastBk').textContent=t?'（上次下載備份：'+String(t).slice(0,10)+'）':'（這台還沒下載過備份）';}
+
+// ── 開始 ──
+var t=todayStr();$('pDate').value=t;$('uDate').value=t;$('pDate').max=t;$('uDate').max=t;
+var st=load();if(st){var r=adopt(st);if(r.d){S=r.d;seq=r.n;}}
+save();showLastBk();render();
+})();
+</script>
+</body>
+</html>
