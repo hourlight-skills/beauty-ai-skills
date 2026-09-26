@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>客人資料清理器｜美業 AI 技能包</title>
+<style>
+:root{--bg:#F0EEE9;--card:#fff;--ink:#3D3835;--mute:#6E675F;--rose:#7D4351;--teal:#007B7F;--orange:#E88A2C;--pink:#FFCCCC;--line:#DDD6CE}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.7}
+.wrap{max-width:980px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:1.6rem;margin:0 0 4px;color:var(--rose)}
+h2{font-size:1.05rem;margin:0 0 10px;color:var(--teal)}
+.sub{color:var(--mute);margin:0 0 16px}
+.card{background:var(--card);border-radius:18px;padding:20px;box-shadow:0 2px 10px rgba(125,67,81,.08);margin-bottom:18px}
+.note{color:var(--mute);font-size:.88rem}
+.alert{background:#FDE2E0;color:#C0392B;border-radius:10px;padding:10px 14px;font-weight:700}
+.info{background:#FFF7EF;border-left:5px solid var(--orange);border-radius:8px;padding:10px 14px;font-size:.92rem}
+textarea{width:100%;min-height:150px;border:2px solid var(--line);border-radius:12px;padding:10px;font:inherit;font-size:.95rem;background:#FFFCFA}
+textarea:focus{outline:none;border-color:var(--teal)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px}
+button{font:inherit;font-weight:700;border:0;border-radius:999px;padding:10px 20px;cursor:pointer}
+button:disabled{opacity:.5;cursor:not-allowed}
+.primary{background:var(--rose);color:#fff}
+.ghost{background:#fff;color:var(--teal);border:2px solid var(--teal)}
+.tbl{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:.92rem}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top;white-space:nowrap}
+th{color:var(--mute);font-size:.85rem}
+td.why{white-space:normal;min-width:160px}
+tr.hit td:first-child{color:#C0392B;font-weight:700}
+select{font:inherit;padding:4px 6px;border-radius:8px;border:2px solid var(--line);background:#fff}
+.msg{font-weight:700;color:var(--teal);min-height:1.6em}
+.msg.bad{color:#C0392B}
+button:focus-visible,select:focus-visible,textarea:focus-visible,input:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+footer{color:var(--mute);font-size:.8rem;margin-top:24px}
+footer a{color:var(--teal)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>客人資料清理器</h1>
+  <p class="sub">要把預約表、客人名單交給 AI 分析之前，先在這裡把姓名、電話、email、生日、地址、LINE ID 拿掉，姓名換成客編。整個過程都在妳的瀏覽器裡，檔案不會上傳，也不會被存起來。</p>
+  <p class="info">這樣處理後，比較不容易從表格認出是誰，但<b>不等於完全匿名</b>。照片、病史、膚況紀錄不要跟這份表一起交給 AI；交之前只留這次分析真的需要的欄位。</p>
+
+  <div class="card">
+    <h2>① 放進資料</h2>
+    <label class="note" for="paste">從 Excel 或 Google 試算表複製整張表貼在這裡（第一列要是欄名），或選一個 CSV 檔：</label>
+    <textarea id="paste" placeholder="姓名,手機,服務,金額&#10;客人A,0912-345-678,臉部保養,1800"></textarea>
+    <div class="row">
+      <button type="button" class="primary" id="read">讀取貼上的內容</button>
+      <button type="button" class="ghost" id="pick">選 CSV 檔</button>
+      <input type="file" id="file" accept=".csv,text/csv,.txt" hidden>
+    </div>
+    <p class="msg" id="readmsg" aria-live="polite"></p>
+  </div>
+
+  <div class="card" id="cols" hidden>
+    <h2>② 每一欄要怎麼處理</h2>
+    <p class="note">紅字是偵測到可能認得出是誰的欄位，已經預設刪除或換成客編。請一欄一欄看過，偵測只看欄名和內容樣子，可能漏抓也可能抓錯。</p>
+    <div class="tbl"><table><thead><tr><th>欄名</th><th>偵測結果</th><th>處理</th><th>前幾筆內容</th></tr></thead><tbody id="colrows"></tbody></table></div>
+    <div class="row"><button type="button" class="primary" id="preview">③ 預覽清理結果</button></div>
+  </div>
+
+  <div class="card" id="out" hidden>
+    <h2>③ 預覽：會刪哪些、剩下什麼</h2>
+    <p id="summary"></p>
+    <div class="tbl"><table><thead id="phead"></thead><tbody id="pbody"></tbody></table></div>
+    <p class="note">預覽只顯示前 5 列，下載的是全部。姓名換成客編時，同一個人（同姓名、同電話）會拿到同一個編號；同名不同電話的會分成兩個編號。</p>
+    <p id="warn" class="info" hidden></p>
+    <label class="note" style="display:flex;gap:8px;align-items:flex-start;margin-top:8px"><input type="checkbox" id="ok" style="margin-top:5px"> <span>我已經看過<b>保留下來的每一欄</b>，裡面沒有姓名、地址、健康狀況這類認得出是誰的內容（工具只會自動遮掉電話、email、身分證字號）。</span></label>
+    <div class="row"><button type="button" class="primary" id="dl" disabled>下載清理後的 CSV</button></div>
+    <p class="msg" id="dlmsg" aria-live="polite"></p>
+  </div>
+
+  <footer>美業 AI 技能包 v0.3.0｜內容出自《AI 時代，美業人的逆襲指南》第 21 章｜個資法：蒐集、利用不能超出特定目的的必要範圍｜<a href="https://github.com/hourlight-skills/beauty-ai-skills/issues" target="_blank" rel="noopener">回報問題</a></footer>
+</div>
+<script>
+(function(){
+var $=function(id){return document.getElementById(id);};
+function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;}
+var head=[], rows=[], plan=[], output=null;
+// ── CSV 讀取（支援雙引號、欄內逗號與換行；貼 Excel 會是 Tab 分隔）──
+function parse(text){
+  text=text.replace(/^﻿/,'');
+  var first=text.split(/\r?\n/)[0]||'', sep=(first.indexOf('\t')>=0&&first.indexOf(',')<0)?'\t':',';
+  var out=[],row=[],cell='',q=false;
+  for(var i=0;i<text.length;i++){var ch=text[i];
+    if(q){ if(ch==='"'){ if(text[i+1]==='"'){cell+='"';i++;} else q=false; } else cell+=ch; }
+    else if(ch==='"'&&cell==='') q=true;
+    else if(ch===sep){row.push(cell);cell='';}
+    else if(ch==='\n'||ch==='\r'){ if(ch==='\r'&&text[i+1]==='\n')i++; row.push(cell);cell=''; if(row.some(function(v){return v.trim()!=='';}))out.push(row); row=[]; }
+    else cell+=ch; }
+  row.push(cell); if(row.some(function(v){return v.trim()!=='';}))out.push(row);
+  return out;
+}
+// ── 偵測：看欄名，再看內容樣子 ──
+var SURNAME='王李張劉陳楊黃趙吳周徐孫馬朱胡郭何高林羅鄭梁謝宋唐許韓馮鄧曹彭曾蕭田董袁潘于蔣蔡余杜葉程蘇魏呂丁任沈姚盧姜崔鍾譚陸汪范金石廖賈夏韋付方白鄒孟熊秦邱江尹薛閻段雷侯龍史陶黎賀顧毛郝龔邵萬錢嚴覃武戴莫孔向湯游詹賴洪涂柯簡翁溫施藍';
+var P={
+  // 手機 09 開頭 10 碼、市話 0 開頭 9–10 碼；+886 開頭的先換回 0
+  phone:function(v){var d=v.replace(/[\s\-().]/g,'').replace(/^\+?886/,'0');return /^09\d{8}$/.test(d)||/^0[2-8]\d{7,8}$/.test(d);},
+  email:function(v){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());},
+  id:function(v){return /^[A-Z][12]\d{8}$/.test(v.trim().toUpperCase());},
+  name:function(v){v=v.trim();return /^[一-鿿]{2,4}$/.test(v)&&SURNAME.indexOf(v[0])>=0;},
+  address:function(v){return /[市縣].{0,6}[區鄉鎮市].{0,12}[路街道巷弄號]/.test(v);},
+  oldDate:function(v){v=v.trim();var m=v.match(/^(\d{2,4})\s*[\/\-.年]\s*(\d{1,2})\s*[\/\-.月]\s*(\d{1,2})\s*日?$/)||v.match(/^(\d{4})(\d{2})(\d{2})$/);
+    if(!m)return false;var y=+m[1];if(y<200)y+=1911;return y>=1920&&y<=2012&&+m[2]>=1&&+m[2]<=12&&+m[3]>=1&&+m[3]<=31;}
+};
+var HEAD=[
+  ['name',/姓名|名字|客人|顧客|客戶|會員名|聯絡人|稱呼|^name$|full ?name|client|customer/i,/店名|服務|項目|品項|療程|方案|商品|產品|分店|名稱/],
+  ['phone',/電話|手機|行動|聯絡方式|phone|mobile|tel|cell/i,null],
+  ['email',/e-?mail|信箱|電郵|郵件/i,null],
+  ['birthday',/生日|出生|birth|dob|生辰/i,null],
+  ['address',/地址|住址|居住|通訊處|address/i,null],
+  ['line',/line|賴/i,/line ?pay|線上/i],
+  ['id',/身分證|身份證|證號|national ?id/i,null]
+];
+var LABEL={name:'姓名',phone:'電話',email:'email',birthday:'生日',address:'地址',line:'LINE ID',id:'身分證字號'};
+function detect(ci){
+  var h=(head[ci]||'').trim(), vals=rows.map(function(r){return (r[ci]||'').trim();}).filter(Boolean), n=vals.length||1;
+  for(var k=0;k<HEAD.length;k++){var H=HEAD[k];if(H[1].test(h)&&!(H[2]&&H[2].test(h)))return {type:H[0],why:'欄名「'+h+'」看起來是'+LABEL[H[0]]};}
+  var ratio=function(f){return vals.filter(f).length/n;};
+  if(ratio(P.email)>=0.5)return {type:'email',why:'內容多半是 email 格式'};
+  if(ratio(P.phone)>=0.5)return {type:'phone',why:'內容多半是電話號碼格式'};
+  if(ratio(P.id)>=0.5)return {type:'id',why:'內容多半是身分證字號格式'};
+  if(ratio(P.oldDate)>=0.5)return {type:'birthday',why:'內容多半是 2012 年以前的日期，可能是生日'};
+  if(ratio(P.address)>=0.5)return {type:'address',why:'內容多半像地址'};
+  if(ratio(P.name)>=0.6)return {type:'name',why:'內容多半像中文姓名'};
+  return null;
+}
+function load(text){
+  output=null;$('dl').disabled=true;$('out').hidden=true;
+  var data=parse(text);
+  if(data.length<2){$('readmsg').className='msg bad';$('readmsg').textContent='讀不到資料：至少要有一列欄名和一列內容。';$('cols').hidden=true;return;}
+  head=data[0].map(function(h,i){return h.trim()||('第 '+(i+1)+' 欄');});
+  var w=head.length; rows=data.slice(1).map(function(r){while(r.length<w)r.push('');return r.slice(0,w);});
+  $('readmsg').className='msg';$('readmsg').textContent='讀到 '+head.length+' 欄、'+rows.length+' 列。';
+  plan=head.map(function(h,i){var d=detect(i);return {det:d,act:d?(d.type==='name'?'code':'drop'):'keep'};});
+  var tb=$('colrows');tb.textContent='';
+  plan.forEach(function(p,i){var tr=el('tr',p.det?'hit':'');tr.appendChild(el('td','',head[i]));
+    tr.appendChild(el('td','why',p.det?p.det.why:'沒偵測到'));
+    var td=el('td'),s=el('select');[['keep','保留'],['drop','刪除'],['code','換成客編']].forEach(function(o){var op=el('option','',o[1]);op.value=o[0];s.appendChild(op);});
+    s.value=p.act;s.setAttribute('aria-label',head[i]+' 的處理方式');s.onchange=function(){p.act=s.value;output=null;$('dl').disabled=true;$('out').hidden=true;};td.appendChild(s);tr.appendChild(td);
+    tr.appendChild(el('td','why',rows.slice(0,3).map(function(r){return r[i];}).join('、')));tb.appendChild(tr);});
+  $('cols').hidden=false;
+}
+// 讀檔：只收 UTF-8（有沒有 BOM 都可以）；讀不出來就請她換存檔格式
+$('pick').onclick=function(){$('file').click();};
+$('file').onchange=function(e){var f=e.target.files[0];e.target.value='';if(!f)return;
+  var fr=new FileReader();fr.onload=function(){var text;
+    try{text=new TextDecoder('utf-8',{fatal:true}).decode(new Uint8Array(fr.result));}
+    catch(err){$('readmsg').className='msg bad';$('readmsg').textContent='這個檔案不是 UTF-8 編碼（Excel 預設存的 CSV 常是 Big5），讀了會變亂碼。請在 Excel 選「另存新檔」→「CSV UTF-8（逗號分隔）」再選一次，或直接複製表格貼到上面。';$('cols').hidden=true;$('out').hidden=true;return;}
+    $('paste').value='';load(text);};
+  fr.onerror=function(){$('readmsg').className='msg bad';$('readmsg').textContent='檔案讀不出來，請再選一次。';};
+  fr.readAsArrayBuffer(f);};
+$('read').onclick=function(){load($('paste').value);};
+// ── 保留的欄位裡，每一格都再掃一次：夾在句子裡的手機、市話、email、身分證字號一律遮掉 ──
+// 第一組抓號碼前面那個字（不是數字才算開頭），換的時候留著它；不用 lookbehind，舊版 iPhone 才跑得動
+var INSIDE=[
+  [/()[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}/g,'〔email〕'],
+  [/(^|[^\d])(?:\+?886[\s\-]?|0)9(?:[\s\-]?\d){8}(?!\d)/g,'〔電話〕'],                          // 手機：0912345678、0912-345-678、09 12 345 678、+886 912…
+  [/(^|[^\d])(?:\+?886[\s\-]?\(?0?|\(?0)[2-8]\d{0,2}\)?[\s\-]?\d(?:[\s\-]?\d){5,7}(?!\d)/g,'〔電話〕'],   // 市話：02-2345-6789、037-123456、(037) 123456、049-1234567、+886 2 2345 6789、+886-37-123456
+  [/(^|[^A-Za-z0-9])[A-Za-z][12]\d{8}(?!\d)/g,'〔身分證〕']
+];
+var EXT=/^\s*(?:#|＃|分機|轉|ext\.?|x)\s*[0-9０-９]{1,5}/i;   // 電話後面接的分機一起遮
+// 全形數字、括號、橫線、加號先換成半形再比對；一個字換一個字，位置不變，所以可以照位置回頭遮原文（原文其他全形字不動）
+function half(s){return s.replace(/[０-９（）－＋＠．＿]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0);}).replace(/　/g,' ').replace(/[‐‑‒–—―]/g,'-');}
+function maskInside(v){v=String(v==null?'':v);var h=half(v),spans=[];
+  INSIDE.forEach(function(p){p[0].lastIndex=0;var m;while((m=p[0].exec(h))){var s=m.index+(m[1]||'').length,e=m.index+m[0].length;if(p[1]==='〔電話〕'){var x=h.slice(e).match(EXT);if(x)e+=x[0].length;}
+    if(!spans.some(function(q){return s<q[1]&&e>q[0];}))spans.push([s,e,p[1]]);if(m[0]==='')p[0].lastIndex++;}});
+  spans.sort(function(a,b){return b[0]-a[0];});spans.forEach(function(q){v=v.slice(0,q[0])+q[2]+v.slice(q[1]);});
+  return {v:v,n:spans.length};}
+// ── 清理：刪欄、姓名換客編（同姓名＋同電話＝同一人）──
+function build(){
+  var keep=[],codeCols=[],phoneCols=[];plan.forEach(function(p,i){if(p.act==='keep')keep.push(i);if(p.act==='code')codeCols.push(i);if(p.det&&p.det.type==='phone')phoneCols.push(i);});
+  var map={},n=0,outHead=[],idx=[];
+  plan.forEach(function(p,i){if(p.act==='keep'){outHead.push(head[i]);idx.push(i);} else if(p.act==='code'){outHead.push('客編');idx.push(i);}});
+  var masked={};
+  var outRows=rows.map(function(r){return idx.map(function(i){
+    if(plan[i].act!=='code'){var m=maskInside(r[i]);if(m.n)masked[head[i]]=(masked[head[i]]||0)+m.n;return m.v;}
+    var key=r[i].trim()+'|'+phoneCols.map(function(c){return r[c].replace(/\D/g,'');}).join('|');
+    if(!r[i].trim())return '';
+    if(!map[key]){n++;map[key]='C'+String(n).padStart(3,'0');}return map[key];});});
+  // 保留下來、自己寫字的欄（備註、狀況、對話紀錄），姓名、地址、過敏這類混在句子裡的偵測不到，要她自己看。
+  // 判準：欄名像備註，或有中文而且每列內容大多不一樣（「臉部保養」這種重複的選項欄不算）；短短一句「王小明過敏」也要叫
+  var NOTE=/備註|附註|說明|紀錄|記錄|狀況|反應|反饋|回饋|心得|對話|留言|需求|note|memo|comment|remark/i;
+  var freeText=idx.filter(function(i){if(plan[i].act!=='keep')return false;var v=rows.map(function(r){return (r[i]||'').trim();}).filter(Boolean);
+    if(!v.length)return false;if(NOTE.test(head[i]))return true;
+    var cjk=v.filter(function(x){return /[一-鿿]{2}/.test(x);});var uniq={};cjk.forEach(function(x){uniq[x]=1;});
+    return cjk.length>0&&Object.keys(uniq).length/cjk.length>0.5;}).map(function(i){return head[i];});
+  return {head:outHead,rows:outRows,masked:masked,freeText:freeText,dropped:plan.map(function(p,i){return p.act==='drop'?head[i]:null;}).filter(Boolean),coded:codeCols.map(function(i){return head[i];}),people:n};
+}
+$('preview').onclick=function(){output=build();
+  var s=$('summary');s.textContent='會刪掉的欄：'+(output.dropped.join('、')||'（沒有）')+'。換成客編的欄：'+(output.coded.join('、')||'（沒有）')+(output.coded.length?'（共 '+output.people+' 個客編）':'')+'。清理後剩下：'+(output.head.join('、')||'（沒有欄位）')+'。';
+  var ph=$('phead'),pb=$('pbody');ph.textContent='';pb.textContent='';var tr=el('tr');output.head.forEach(function(h){tr.appendChild(el('th','',h));});ph.appendChild(tr);
+  output.rows.slice(0,5).forEach(function(r){var t=el('tr');r.forEach(function(v){t.appendChild(el('td','',v));});pb.appendChild(t);});
+  var w=[],mk=Object.keys(output.masked);
+  if(mk.length)w.push('保留的欄位裡夾著電話、email 或身分證字號，已經遮掉：'+mk.map(function(k){return k+' '+output.masked[k]+' 處';}).join('、')+'。');
+  if(output.freeText.length)w.push('「'+output.freeText.join('」「')+'」是自己寫字的欄，裡面如果寫了客人的名字、地址或身體狀況（就算只有一句，例如「王小明過敏」），工具抓不到，請打開下載的檔案整欄看過；不需要的話，上面改成「刪除」最保險。');
+  $('warn').textContent=w.join(' ');$('warn').hidden=!w.length;
+  $('ok').checked=false;$('out').hidden=false;$('dl').disabled=true;$('dlmsg').textContent='';};
+$('ok').onchange=function(){$('dl').disabled=!(output&&output.head.length&&$('ok').checked);};
+// 下載：UTF-8 加 BOM（Excel 打得開）；開頭是 = + - @ 的格子前面加 ' ，避免被試算表當公式
+function cell(v){v=String(v);if(/^[=+\-@]/.test(v))v="'"+v;return /[",\r\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;}
+$('dl').onclick=function(){if(!output||!$('ok').checked)return;
+  var csv='﻿'+[output.head].concat(output.rows).map(function(r){return r.map(cell).join(',');}).join('\r\n');
+  var u=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})),a=document.createElement('a');a.href=u;a.download='清理後_客人資料.csv';a.click();
+  setTimeout(function(){URL.revokeObjectURL(u);},10000);$('dlmsg').textContent='已下載。原本的檔案沒有被改。';};
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI 訂閱與花費一頁看｜美業 AI 技能包</title>
+<style>
+:root{--bg:#F0EEE9;--card:#fff;--ink:#3D3835;--mute:#6E675F;--rose:#7D4351;--teal:#007B7F;--orange:#E88A2C;--pink:#FFCCCC;--line:#DDD6CE}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.7}
+.wrap{max-width:980px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:1.6rem;margin:0 0 4px;color:var(--rose)}
+h2{font-size:1.05rem;margin:0 0 10px;color:var(--teal)}
+.sub{color:var(--mute);margin:0 0 16px}
+.card{background:var(--card);border-radius:18px;padding:20px;box-shadow:0 2px 10px rgba(125,67,81,.08);margin-bottom:18px}
+.note{color:var(--mute);font-size:.88rem}
+.svc{border:2px solid var(--line);border-radius:14px;padding:12px;margin-bottom:12px}
+.svc .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px}
+@media (min-width:760px){.svc .grid{grid-template-columns:1.4fr 1fr 1fr 1fr 2fr}}
+label{display:block;font-size:.85rem;font-weight:700}
+input,select{display:block;width:100%;margin-top:2px;font:inherit;font-weight:400;padding:6px 8px;border:2px solid var(--line);border-radius:10px;background:#FFFCFA;font-size:16px}
+input:focus,select:focus{outline:none;border-color:var(--teal)}
+input.err{border-color:#C0392B;background:#FDE2E0}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px}
+button,a.btn{font:inherit;font-weight:700;border:0;border-radius:999px;padding:10px 20px;cursor:pointer;text-decoration:none;display:inline-block}
+.primary{background:var(--rose);color:#fff}
+.ghost{background:#fff;color:var(--teal);border:2px solid var(--teal)}
+.small{padding:4px 12px;font-size:.8rem}
+.big{font-size:1.6rem;font-weight:900;color:var(--rose)}
+.bad{color:#C0392B;font-weight:700}.ok{color:var(--teal);font-weight:700}.warn{color:#9A5B12;font-weight:700}
+ul.list{padding-left:20px;margin:6px 0}ul.list li{margin-bottom:6px}
+button:focus-visible,input:focus-visible,a:focus-visible,select:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+footer{color:var(--mute);font-size:.8rem;margin-top:24px}
+footer a{color:var(--teal)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>AI 訂閱與花費一頁看</h1>
+  <p class="sub">妳付了幾家 AI？一個月一共花多少？哪一家快要續約扣款？全部排在一頁。每一家的「用量／帳單」頁面連結自己貼一次，之後一鍵打開，額度還剩多少到那一頁看。<b>方案、費用、扣款日都是妳自己填的，這個工具讀不到各家 AI 的真實用量與帳單。</b>資料只存在這台電腦的這個瀏覽器，不會上傳，也不需要登入。</p>
+  <p id="store" class="bad" hidden>這個瀏覽器不讓網頁存資料（常見原因：無痕模式）。現在可以照常用，但關掉就會不見；要留著請按下面的「複製備份碼」。</p>
+
+  <div class="card">
+    <h2>① 我在用的 AI</h2>
+    <p class="note">「用量頁連結」請到那家 AI 的設定裡找「用量」「帳單」或「方案」頁，把網址複製貼上。每家介面會改版，所以這裡不幫妳寫死網址。</p>
+    <div id="list"></div>
+    <div class="row">
+      <button type="button" class="ghost" id="add">＋ 再加一家</button>
+      <button type="button" class="ghost" id="ex">放三個例子</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>② 一個月花多少</h2>
+    <div id="sum"><p class="note">填好上面至少一家就會出現。</p></div>
+    <label style="max-width:260px;margin-top:10px">每月 AI 預算上限（元，選填）<input type="number" id="budget" min="0" inputmode="decimal" placeholder="例：1500"></label>
+  </div>
+
+  <div class="card">
+    <h2>③ 快到期／要注意</h2>
+    <div id="alerts"><p class="note">填了「下次扣款日」就會提醒。</p></div>
+  </div>
+
+  <div class="card">
+    <h2>備份</h2>
+    <p class="note">換電腦或清除瀏覽器資料前，先複製備份碼存起來；到新電腦貼回來就好。</p>
+    <div class="row"><button type="button" class="ghost" id="exp">複製備份碼</button><button type="button" class="ghost" id="imp">貼上備份碼還原</button><span id="msg" class="note"></span></div>
+  </div>
+
+  <footer>美業 AI 技能包 v0.3.0｜通用小工具｜<a href="index.html">回工具首頁</a>｜<a href="https://github.com/hourlight-skills/beauty-ai-skills/issues" target="_blank" rel="noopener">回報問題</a></footer>
+</div>
+<script>
+(function(){
+var KEY='hl-ai-usage-hub-v1';
+var $=function(id){return document.getElementById(id);};
+function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;}
+var fmt=function(n){return n.toLocaleString('zh-TW',{maximumFractionDigits:0});};
+var FIELDS=[['name','AI 名稱','例：Claude','text'],['plan','方案','例：Pro','text'],['price','每月費用（元）','例：600','number'],['next','下次扣款日','','date'],['url','用量頁連結','貼上網址','url']];
+var rows=[], seq=0;
+function load(){try{return JSON.parse(localStorage.getItem(KEY)||'null');}catch(e){return null;}}
+function snapshot(){return JSON.stringify({budget:$('budget').value,rows:rows.map(function(r){var o={};FIELDS.forEach(function(f){o[f[0]]=r.inputs[f[0]].value;});return o;})});}
+function save(){var ok=true;try{localStorage.setItem(KEY,snapshot());}catch(e){ok=false;}$('store').hidden=ok;return ok;}   // 無痕模式或瀏覽器擋儲存：畫面照常能用，但要明講關掉就不見
+function safeUrl(u){u=String(u||'').trim();if(!u)return '';if(!/^https:\/\//i.test(u))return null;try{new URL(u);return u;}catch(e){return null;}}
+function addRow(v){var r={id:++seq,inputs:{}};var box=el('div','svc');var g=el('div','grid');
+  FIELDS.forEach(function(f){var lb=el('label','',f[1]);var i=el('input');i.type=f[3];if(f[2])i.placeholder=f[2];if(f[3]==='number'){i.min='0';i.inputMode='decimal';}
+    if(v&&v[f[0]]!=null)i.value=v[f[0]];i.oninput=function(){calc();save();};lb.appendChild(i);g.appendChild(lb);r.inputs[f[0]]=i;});
+  box.appendChild(g);
+  var bar=el('div','row');r.open=el('a','btn ghost small','打開用量頁');r.open.target='_blank';r.open.rel='noopener noreferrer';
+  var rm=el('button','ghost small','刪掉這一家');rm.type='button';rm.onclick=function(){rows=rows.filter(function(x){return x!==r;});box.remove();calc();save();};
+  r.msg=el('span','note');bar.appendChild(r.open);bar.appendChild(rm);bar.appendChild(r.msg);box.appendChild(bar);
+  $('list').appendChild(box);rows.push(r);calc();}
+function daysTo(d){if(!d)return null;var t=new Date(d+'T00:00:00');if(isNaN(t))return null;var now=new Date();now.setHours(0,0,0,0);return Math.round((t-now)/86400000);}
+function calc(){
+  var total=0,alerts=[],n=0;
+  rows.forEach(function(r){var I=r.inputs,name=I.name.value.trim()||'（沒寫名稱）';
+    var p=I.price.value.trim(),pv=p===''?0:Number(p);I.price.classList.toggle('err',p!==''&&!(pv>=0&&isFinite(pv)));
+    if(p!==''&&pv>=0&&isFinite(pv)){total+=pv;n++;}
+    var u=safeUrl(I.url.value);I.url.classList.toggle('err',u===null);
+    if(u){r.open.href=u;r.open.style.display='';r.msg.textContent='';}else{r.open.removeAttribute('href');r.open.style.display='none';r.msg.textContent=u===null?'連結要是 https:// 開頭的網址':'';}
+    var d=daysTo(I.next.value);
+    if(d!=null){if(d<0)alerts.push({cls:'warn',t:name+'：扣款日 '+I.next.value+' 已過，記得把日期改成下一次'});
+      else if(d<=7)alerts.push({cls:'bad',t:name+'：'+(d===0?'今天':d+' 天後')+'扣款'+(pv?'（約 '+fmt(pv)+' 元）':'')+'，要續用嗎？'});}
+  });
+  var s=$('sum');s.textContent='';
+  if(!n){s.appendChild(el('p','note','填好上面至少一家的每月費用就會出現。'));}
+  else{s.appendChild(el('div','big','每月約 '+fmt(total)+' 元'));s.appendChild(el('p','note','一年約 '+fmt(total*12)+' 元（'+n+' 家）。'));
+    var bT=$('budget').value.trim(),b=bT===''?null:Number(bT);$('budget').classList.toggle('err',b!=null&&!(b>=0));
+    if(b!=null&&b>=0){if(total>b)s.appendChild(el('p','bad','超過預算 '+fmt(total-b)+' 元：看看哪一家其實很少用。'));else s.appendChild(el('p','ok','在預算內，還有 '+fmt(b-total)+' 元空間。'));}}
+  var a=$('alerts');a.textContent='';
+  if(!alerts.length){a.appendChild(el('p','note','7 天內沒有要扣款的。'));}
+  else{var ul=el('ul','list');alerts.forEach(function(x){ul.appendChild(el('li',x.cls,x.t));});a.appendChild(ul);}
+}
+$('add').onclick=function(){addRow();save();};
+$('ex').onclick=function(){addRow({name:'Claude（例子）',plan:'Pro',price:'',url:'https://claude.ai/'});addRow({name:'ChatGPT（例子）',plan:'Plus',price:'',url:'https://chatgpt.com/'});addRow({name:'Gemini（例子）',plan:'',price:'',url:'https://gemini.google.com/'});save();};
+$('budget').oninput=function(){calc();save();};
+$('exp').onclick=function(){save();var t=snapshot();   // 直接從畫面上的資料組，不靠瀏覽器儲存（存不進去時也拿得到）
+  (navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(t):Promise.reject()).then(function(){$('msg').textContent='已複製，貼到記事本存起來。';},function(){prompt('複製下面這段存起來：',t);});};
+function clean(v){var o={};FIELDS.forEach(function(f){o[f[0]]=v&&v[f[0]]!=null?String(v[f[0]]).slice(0,300):'';});return o;}   // 備份碼只收這五欄、每欄當純文字
+$('imp').onclick=function(){var t=prompt('把備份碼貼在這裡：');if(!t)return;try{var o=JSON.parse(t);if(!o||!Array.isArray(o.rows)||o.rows.length>50)throw 0;
+    $('list').textContent='';rows=[];$('budget').value=String(o.budget||'').replace(/[^0-9.]/g,'').slice(0,12);o.rows.forEach(function(v){addRow(clean(v));});var ok=save();$('msg').textContent='已還原 '+o.rows.length+' 家'+(ok?'。':'，但這個瀏覽器存不進去，關掉就會不見。');}catch(e){$('msg').textContent='這段不是正確的備份碼。';}};
+var st=load();if(st&&Array.isArray(st.rows)&&st.rows.length){$('budget').value=st.budget||'';st.rows.forEach(function(v){addRow(v);});}else addRow();
+})();
+</script>
+</body>
+</html>

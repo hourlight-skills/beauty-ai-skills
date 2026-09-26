@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>排程空檔與清潔緩衝｜美業 AI 技能包</title>
+<style>
+:root{--bg:#F0EEE9;--card:#fff;--ink:#3D3835;--mute:#6E675F;--rose:#7D4351;--teal:#007B7F;--orange:#E88A2C;--pink:#FFCCCC;--line:#DDD6CE}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.7}
+.wrap{max-width:980px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:1.6rem;margin:0 0 4px;color:var(--rose)}
+h2{font-size:1.05rem;margin:0 0 10px;color:var(--teal)}
+.sub{color:var(--mute);margin:0 0 16px}
+.card{background:var(--card);border-radius:18px;padding:20px;box-shadow:0 2px 10px rgba(125,67,81,.08);margin-bottom:18px}
+.note{color:var(--mute);font-size:.88rem}
+.g4{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px}
+@media (min-width:760px){.g4{grid-template-columns:repeat(4,1fr)}}
+label{display:block;font-size:.85rem;font-weight:700}
+input,select{display:block;width:100%;margin-top:2px;font:inherit;font-weight:400;padding:6px 8px;border:2px solid var(--line);border-radius:10px;background:#FFFCFA}
+input:focus,select:focus{outline:none;border-color:var(--teal)}
+input.err{border-color:#C0392B;background:#FDE2E0}
+.item{border:2px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:10px}
+.item.conflict{border-color:#C0392B;background:#FFF5F4}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px}
+button{font:inherit;font-weight:700;border:0;border-radius:999px;padding:10px 20px;cursor:pointer}
+.primary{background:var(--rose);color:#fff}
+.ghost{background:#fff;color:var(--teal);border:2px solid var(--teal)}
+.small{padding:4px 12px;font-size:.8rem;margin-top:6px}
+.bad{color:#C0392B;font-weight:700}.ok{color:var(--teal);font-weight:700}
+.lane{margin:8px 0 14px}
+.lane b{display:block;font-size:.9rem}
+.bar{position:relative;height:34px;background:#EFEDEA;border-radius:8px;overflow:hidden}
+.blk{position:absolute;top:3px;bottom:3px;border-radius:6px;background:var(--teal);color:#fff;font-size:.72rem;padding:0 4px;overflow:hidden;white-space:nowrap}
+.blk.buf{background:#8FC7C8}
+.blk.x{background:#C0392B}
+.scale{display:flex;justify-content:space-between;font-size:.72rem;color:var(--mute)}
+ul.list{padding-left:20px;margin:6px 0}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+footer{color:var(--mute);font-size:.8rem;margin-top:24px}
+footer a{color:var(--teal)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>排程空檔與清潔緩衝</h1>
+  <p class="sub">先在這裡排一天「假想的預約」，看看把清潔、消毒、休息時間算進去之後，會不會撞到人或撞到床位、哪裡還有空檔。這是模擬，不會連到任何日曆，也不會幫妳預約。資料只在妳的瀏覽器裡。</p>
+
+  <div class="card">
+    <h2>① 店裡的條件</h2>
+    <div class="g4">
+      <label>幾點開始營業<input type="time" id="open" value="10:00"></label>
+      <label>幾點結束營業<input type="time" id="close" value="20:00"></label>
+      <label>幾位服務人員<input type="number" id="staff" value="1" min="1" max="20" inputmode="numeric"></label>
+      <label>幾張床位／座位<input type="number" id="beds" value="1" min="1" max="30" inputmode="numeric"></label>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>② 每種服務要多久</h2>
+    <p class="note">「緩衝」是做完之後的清潔、消毒、換床單、休息時間，每一種服務不一樣，請照妳店裡實際需要的時間填（衛生相關的做法以主管機關規定為準），這裡不幫妳預設。</p>
+    <div id="svcs"></div>
+    <div class="row"><button type="button" class="ghost" id="addSvc">＋ 再加一種服務</button></div>
+  </div>
+
+  <div class="card">
+    <h2>③ 排幾個假想預約</h2>
+    <div id="appts"></div>
+    <div class="row"><button type="button" class="primary" id="addAppt">＋ 加一個預約</button></div>
+  </div>
+
+  <div class="card">
+    <h2>④ 結果</h2>
+    <div id="out"><p class="note">填好服務和預約就會出現。</p></div>
+  </div>
+
+  <footer>美業 AI 技能包 v0.3.0｜內容出自《AI 時代，美業人的逆襲指南》第 13、19 章｜<a href="https://github.com/hourlight-skills/beauty-ai-skills/issues" target="_blank" rel="noopener">回報問題</a></footer>
+</div>
+<script>
+(function(){
+var $=function(id){return document.getElementById(id);};
+function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;}
+function lab(text,input){var l=el('label','',text);l.appendChild(input);return l;}
+function inp(type,ph,v){var i=el('input');i.type=type;if(ph)i.placeholder=ph;if(v!=null)i.value=v;if(type==='number'){i.min='0';i.inputMode='numeric';}i.oninput=calc;i.onchange=calc;return i;}
+var toMin=function(t){var m=/^(\d{1,2}):(\d{2})/.exec(t||'');return m?(+m[1])*60+(+m[2]):NaN;};
+var hm=function(n){return String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0');};
+var svcs=[],appts=[],seq=0;
+function addSvc(){var s={id:++seq};var box=el('div','item'),g=el('div','g4');
+  s.name=inp('text','例：接睫毛');s.dur=inp('number','例：90');s.buf=inp('number','例：妳店裡需要的分鐘數');
+  g.appendChild(lab('服務名稱',s.name));g.appendChild(lab('服務幾分鐘',s.dur));g.appendChild(lab('做完的緩衝幾分鐘',s.buf));box.appendChild(g);
+  var rm=el('button','ghost small','刪掉這一種');rm.type='button';rm.onclick=function(){svcs=svcs.filter(function(x){return x!==s;});box.remove();refreshSelects();calc();};box.appendChild(rm);
+  s.name.addEventListener('input',refreshSelects);$('svcs').appendChild(box);svcs.push(s);refreshSelects();}
+function opts(sel,list,keep){var v=sel.value;sel.textContent='';list.forEach(function(o){var op=el('option','',o[1]);op.value=o[0];sel.appendChild(op);});if(keep&&list.some(function(o){return String(o[0])===v;}))sel.value=v;}
+function refreshSelects(){var ns=Math.max(1,Math.min(20,+$('staff').value||1)),nb=Math.max(1,Math.min(30,+$('beds').value||1));
+  var sv=svcs.map(function(s,i){return [s.id,s.name.value.trim()||('第 '+(i+1)+' 種服務')];});
+  appts.forEach(function(a){opts(a.svc,sv,true);opts(a.staff,Array.from({length:ns},function(_,i){return [i+1,'人員 '+(i+1)];}),true);opts(a.bed,Array.from({length:nb},function(_,i){return [i+1,'床位 '+(i+1)];}),true);});}
+function addAppt(){var a={id:++seq};var box=el('div','item'),g=el('div','g4');
+  a.start=inp('time','','');a.svc=el('select');a.staff=el('select');a.bed=el('select');[a.svc,a.staff,a.bed].forEach(function(s){s.onchange=calc;});
+  g.appendChild(lab('幾點開始',a.start));g.appendChild(lab('做哪一種',a.svc));g.appendChild(lab('誰做',a.staff));g.appendChild(lab('哪張床',a.bed));box.appendChild(g);
+  a.msg=el('div','');box.appendChild(a.msg);
+  var rm=el('button','ghost small','刪掉這個預約');rm.type='button';rm.onclick=function(){appts=appts.filter(function(x){return x!==a;});box.remove();calc();};box.appendChild(rm);
+  a.box=box;$('appts').appendChild(box);appts.push(a);refreshSelects();calc();}
+function calc(){
+  var out=$('out');out.textContent='';var P=[];
+  var open=toMin($('open').value),close=toMin($('close').value),ns=+$('staff').value,nb=+$('beds').value;
+  if(!(close>open))P.push('結束營業要晚於開始營業');
+  if(!(ns>=1&&ns<=20&&Number.isInteger(ns)))P.push('服務人員要是 1 到 20 的整數');
+  if(!(nb>=1&&nb<=30&&Number.isInteger(nb)))P.push('床位要是 1 到 30 的整數');
+  var S={};svcs.forEach(function(s,i){var nm=s.name.value.trim()||('第 '+(i+1)+' 種服務');[s.dur,s.buf].forEach(function(x){x.classList.remove('err');});
+    var d=s.dur.value.trim(),b=s.buf.value.trim();
+    if(d===''||!(+d>0)){P.push(nm+'：服務分鐘要大於 0');s.dur.classList.add('err');return;}
+    if(b===''||!(+b>=0)){P.push(nm+'：緩衝分鐘請填（真的不需要就填 0）');s.buf.classList.add('err');return;}
+    S[s.id]={name:nm,dur:Math.round(+d),buf:Math.round(+b)};});
+  if(P.length){out.appendChild(el('p','bad','先改這幾格：'));var ul=el('ul','list');P.forEach(function(p){ul.appendChild(el('li','',p));});out.appendChild(ul);}
+  var list=[];appts.forEach(function(a,i){a.box.classList.remove('conflict');a.msg.textContent='';a.start.classList.remove('err');
+    var st=toMin(a.start.value),s=S[a.svc.value];
+    if(isNaN(st)){a.msg.appendChild(el('span','bad','請填開始時間'));a.start.classList.add('err');return;}
+    if(!s){a.msg.appendChild(el('span','bad','這種服務的分鐘數還沒填好'));return;}
+    var it={a:a,no:i+1,st:st,end:st+s.dur,endBuf:st+s.dur+s.buf,s:s,staff:+a.staff.value,bed:+a.bed.value,probs:[]};
+    a.msg.appendChild(el('span','','佔用 '+hm(st)+'–'+hm(it.endBuf)+'（服務 '+s.dur+' 分＋緩衝 '+s.buf+' 分）'));list.push(it);});
+  if(P.length&&!list.length)return;
+  // 衝突：同一位人員或同一張床，佔用時間（含緩衝）重疊就算
+  list.forEach(function(x){
+    if(x.st<open)x.probs.push('比開門早（'+hm(open)+' 才開）');
+    if(x.end>close)x.probs.push('服務做完已經過了營業時間（'+hm(close)+'）');
+    else if(x.endBuf>close)x.probs.push('清潔緩衝會超過營業時間（'+hm(close)+'）');
+    if(x.staff>ns)x.probs.push('人員 '+x.staff+' 不存在');if(x.bed>nb)x.probs.push('床位 '+x.bed+' 不存在');
+    list.forEach(function(y){if(x===y)return;var ov=x.st<y.endBuf&&y.st<x.endBuf;if(!ov)return;
+      if(x.staff===y.staff)x.probs.push('跟第 '+y.no+' 個預約撞到同一位人員（人員 '+x.staff+'）');
+      if(x.bed===y.bed)x.probs.push('跟第 '+y.no+' 個預約撞到同一張床（床位 '+x.bed+'）');});});
+  var bad=list.filter(function(x){return x.probs.length;});
+  bad.forEach(function(x){x.a.box.classList.add('conflict');x.a.msg.appendChild(el('div','bad','⚠ '+x.probs.join('；')));});
+  out.appendChild(el('p',bad.length?'bad':'ok',bad.length?('有 '+bad.length+' 個預約有問題，已在上面標紅框。'):(list.length?'沒有撞到人或床位，也都在營業時間內。':'還沒有預約。')));
+  if(!(close>open))return;
+  // 時間軸與空檔：每位人員、每張床各一條
+  var span=close-open;function lane(title,key,n){for(var k=1;k<=n;k++){var mine=list.filter(function(x){return x[key]===k;}).sort(function(p,q){return p.st-q.st;});
+    var L=el('div','lane');L.appendChild(el('b','',title+' '+k));var bar=el('div','bar');bar.setAttribute('aria-hidden','true');
+    mine.forEach(function(x){var a=Math.max(x.st,open),b=Math.min(x.end,close),c=Math.min(x.endBuf,close);
+      if(b>a){var d=el('div','blk'+(x.probs.length?' x':''),x.s.name);d.style.left=((a-open)/span*100)+'%';d.style.width=((b-a)/span*100)+'%';bar.appendChild(d);}
+      if(c>b){var e=el('div','blk buf');e.style.left=((b-open)/span*100)+'%';e.style.width=((c-b)/span*100)+'%';bar.appendChild(e);}});
+    L.appendChild(bar);var sc=el('div','scale');sc.appendChild(el('span','',hm(open)));sc.appendChild(el('span','',hm(close)));L.appendChild(sc);
+    var gaps=[],cur=open;mine.forEach(function(x){if(x.st>cur)gaps.push([cur,Math.min(x.st,close)]);cur=Math.max(cur,x.endBuf);});if(cur<close)gaps.push([cur,close]);
+    gaps=gaps.filter(function(g){return g[1]>g[0];});
+    L.appendChild(el('div','note','空檔：'+(gaps.length?gaps.map(function(g){return hm(g[0])+'–'+hm(g[1])+'（'+(g[1]-g[0])+' 分）';}).join('、'):'沒有')));
+    out.appendChild(L);}}
+  out.appendChild(el('h2','','服務人員'));lane('人員','staff',Math.min(ns,20));
+  out.appendChild(el('h2','','床位／座位'));lane('床位','bed',Math.min(nb,30));
+  out.appendChild(el('p','note','深綠是服務時間、淺綠是緩衝、紅色是有問題的預約。空檔是營業時間內沒有被服務或緩衝佔用的時間。'));
+}
+['open','close'].forEach(function(id){$(id).onchange=calc;$(id).oninput=calc;});
+['staff','beds'].forEach(function(id){$(id).oninput=function(){refreshSelects();calc();};});
+$('addSvc').onclick=function(){addSvc();calc();};$('addAppt').onclick=addAppt;
+addSvc();calc();
+})();
+</script>
+</body>
+</html>

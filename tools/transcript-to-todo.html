@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>逐字稿轉待辦｜美業 AI 技能包</title>
+<style>
+:root{--bg:#F0EEE9;--card:#fff;--ink:#3D3835;--mute:#6E675F;--rose:#7D4351;--teal:#007B7F;--orange:#E88A2C;--pink:#FFCCCC;--line:#DDD6CE}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.7}
+.wrap{max-width:980px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:1.6rem;margin:0 0 4px;color:var(--rose)}
+h2{font-size:1.05rem;margin:0 0 10px;color:var(--teal)}
+.sub{color:var(--mute);margin:0 0 16px}
+.card{background:var(--card);border-radius:18px;padding:20px;box-shadow:0 2px 10px rgba(125,67,81,.08);margin-bottom:18px}
+.note{color:var(--mute);font-size:.88rem}
+textarea{display:block;width:100%;min-height:200px;font:inherit;font-size:16px;padding:10px;border:2px solid var(--line);border-radius:12px;background:#FFFCFA;resize:vertical}
+textarea:focus{outline:none;border-color:var(--teal)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px}
+button{font:inherit;font-weight:700;border:0;border-radius:999px;padding:10px 20px;cursor:pointer;min-height:44px}
+.primary{background:var(--rose);color:#fff}
+.ghost{background:#fff;color:var(--teal);border:2px solid var(--teal)}
+table{width:100%;border-collapse:collapse;font-size:.92rem}
+th,td{border-bottom:1px solid var(--line);padding:6px 4px;text-align:left;vertical-align:top}
+th{color:var(--teal);font-size:.85rem}
+td[contenteditable]{background:#FFFCFA;border-radius:6px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.pre{white-space:pre-wrap;word-break:break-word;background:#FFF7EF;border-left:5px solid var(--orange);border-radius:8px;padding:10px 12px;font-size:.9rem;max-height:260px;overflow:auto}
+button:focus-visible,textarea:focus-visible,td:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+footer{color:var(--mute);font-size:.8rem;margin-top:24px}
+footer a{color:var(--teal)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>逐字稿轉待辦</h1>
+  <p class="sub">開完會、跟客人或廠商講完電話，把逐字稿（手機錄音轉出來的文字也可以）貼進來，整理成「誰、做什麼、什麼時候」。兩種用法：<b>A 在這裡直接挑</b>（不用 AI、不上傳）；<b>B 一鍵產生指令</b>貼給 ChatGPT／Claude／Gemini，讓它整理得更完整。</p>
+
+  <div class="card">
+    <h2>① 貼上逐字稿</h2>
+    <textarea id="t" placeholder="例：小美：下週三前我會把新價目表做好。 老闆：好，那客人的通知就請阿芳明天發 LINE。 阿芳：OK，我週五前也會把耗材盤點完。"></textarea>
+    <div class="row"><button type="button" class="primary" id="go">A 在這裡挑出待辦</button><button type="button" class="ghost" id="mk">B 產生給 AI 的指令</button><button type="button" class="ghost" id="ex">放一段例子</button></div>
+    <p class="note">貼給 AI 之前，客人姓名、電話請先換掉（可以用「客人資料清理器」）。</p>
+  </div>
+
+  <div class="card" id="resA" hidden>
+    <h2>A　挑出來的待辦（草稿，可以直接點格子修改）</h2>
+    <p id="sumA" class="note"></p>
+    <table><thead><tr><th style="width:18%">誰</th><th>做什麼</th><th style="width:20%">什麼時候</th></tr></thead><tbody id="tb"></tbody></table>
+    <div class="row"><button type="button" class="ghost" id="copyA">複製成清單</button><span id="msgA" class="note"></span></div>
+    <p class="note">這是用關鍵字挑的：句子裡有「要、會、請、記得、負責、處理、準備、確認、寄、發、聯絡、安排、做」這類字才會被挑出來，一定會有漏的或多的，請看過再用。</p>
+  </div>
+
+  <div class="card" id="resB" hidden>
+    <h2>B　給 AI 的指令（整段複製，貼到 AI 對話框）</h2>
+    <div class="pre" id="pB"></div>
+    <div class="row"><button type="button" class="primary" id="copyB">一鍵複製</button><span id="msgB" class="note"></span></div>
+  </div>
+
+  <footer>美業 AI 技能包 v0.3.0｜通用小工具｜<a href="index.html">回工具首頁</a>｜<a href="https://github.com/hourlight-skills/beauty-ai-skills/issues" target="_blank" rel="noopener">回報問題</a></footer>
+</div>
+<script>
+(function(){
+var $=function(id){return document.getElementById(id);};
+function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;}
+var ACT=/(要|會|請|記得|負責|處理|準備|確認|寄|發|聯絡|安排|完成|整理|盤點|訂|買|回覆|更新|做好|交給|提醒|跟進)/;
+var UNDECIDED=/(還沒決定|要不要|再說|考慮看看|不確定|再想想|再討論)/;   // 沒決定的事不算待辦（B 指令會另外列出來）
+var WHEN=/(今天|今晚|明天|後天|這週[一二三四五六日天]?|下週[一二三四五六日天]?|週[一二三四五六日天]|星期[一二三四五六日天]|月底|月初|[0-9０-９]{1,2}\s*[\/月]\s*[0-9０-９]{1,2}\s*日?|[0-9０-９]{1,2}\s*點|盡快|馬上|之前|以前|前)/g;
+function split(t){return t.replace(/\r/g,'').replace(/([。！？!?])/g,'$1\n').split(/\n+/).map(function(s){return s.trim();}).filter(Boolean);}
+function who(s,last){var m=s.match(/^([^\s：:，,。]{1,6})\s*[：:]/);var speaker=m?m[1]:'';
+  var ask=s.match(/(?:請|讓|由|交給)\s*([^\s，,。、]{1,4}?)(?=\s*(?:明天|今天|後天|下週|這週|週|星期|[0-9０-９]|負責|來|去|先|幫|處理|發|寄|做|整理|準備|確認|聯絡))/);
+  if(ask)return ask[1];if(/我(會|來|要|負責)/.test(s)&&speaker)return speaker;return speaker||last||'';}
+function run(){var t=$('t').value.trim();$('resA').hidden=false;var tb=$('tb');tb.textContent='';
+  if(!t){$('sumA').textContent='還沒有貼內容。';return;}
+  var n=0,last='';split(t).forEach(function(s){var sp=s.match(/^([^\s：:，,。]{1,6})\s*[：:]/);if(sp)last=sp[1];
+    var body=s.replace(/^[^\s：:，,。]{1,6}\s*[：:]\s*/,'');if(!ACT.test(body)||body.length<4||UNDECIDED.test(body))return;
+    var w=who(s,last),ws=(body.match(WHEN)||[]).filter(function(x){return !/^(前|之前|以前)$/.test(x);}).join('、');
+    var tr=el('tr');[w||'（沒講）',body,ws||'（沒講）'].forEach(function(v){var td=el('td','',v);td.contentEditable='true';tr.appendChild(td);});tb.appendChild(tr);n++;});
+  $('sumA').textContent=n?('挑出 '+n+' 項，看過再用：'):'沒挑到像待辦的句子。可以改用 B，讓 AI 整理。';}
+function mk(){var t=$('t').value.trim();$('resB').hidden=false;
+  var p='下面是一段會議／通話的逐字稿。請幫我整理成待辦清單，格式是表格，三欄：誰負責、要做什麼、期限。\n規則：\n1. 只寫逐字稿裡真的有講到的事，沒講到的不要自己補。\n2. 沒講誰負責或沒講期限的，寫「沒講」，不要猜。\n3. 最後另外列出「還沒決定、需要再確認的事」。\n4. 用繁體中文。\n\n逐字稿：\n'+(t||'【把逐字稿貼在這裡】');
+  $('pB').textContent=p;}
+function copy(txt,msg){(navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(txt):Promise.reject()).then(function(){$(msg).textContent='已複製。';},function(){prompt('複製下面這段：',txt);});}
+$('go').onclick=run;$('mk').onclick=mk;
+$('ex').onclick=function(){$('t').value='小美：下週三前我會把新價目表做好。\n老闆：好，那客人的通知就請阿芳明天發 LINE。\n阿芳：OK，我週五前也會把耗材盤點完。\n老闆：週年慶要不要做還沒決定，下次再說。';run();mk();};
+$('copyA').onclick=function(){var lines=[].map.call(document.querySelectorAll('#tb tr'),function(r){var c=r.querySelectorAll('td');return '☐ '+c[0].textContent+'｜'+c[1].textContent+'｜'+c[2].textContent;});copy(lines.join('\n'),'msgA');};
+$('copyB').onclick=function(){copy($('pB').textContent,'msgB');};
+})();
+</script>
+</body>
+</html>

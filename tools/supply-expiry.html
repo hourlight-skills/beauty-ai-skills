@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>耗材效期與補貨清單｜美業 AI 技能包</title>
+<style>
+:root{--bg:#F0EEE9;--card:#fff;--ink:#3D3835;--mute:#6E675F;--rose:#7D4351;--teal:#007B7F;--orange:#E88A2C;--pink:#FFCCCC;--line:#DDD6CE}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.7}
+.wrap{max-width:980px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:1.6rem;margin:0 0 4px;color:var(--rose)}
+h2{font-size:1.05rem;margin:0 0 10px;color:var(--teal)}
+.sub{color:var(--mute);margin:0 0 16px}
+.card{background:var(--card);border-radius:18px;padding:20px;box-shadow:0 2px 10px rgba(125,67,81,.08);margin-bottom:18px}
+.note{color:var(--mute);font-size:.88rem}
+.item{border:2px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:10px}
+.g{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px}
+@media (min-width:760px){.g{grid-template-columns:2fr 1fr 1fr 1fr 1fr 1fr 1fr}}
+label{display:block;font-size:.82rem;font-weight:700}
+input{display:block;width:100%;margin-top:2px;font:inherit;font-weight:400;padding:6px 8px;border:2px solid var(--line);border-radius:10px;background:#FFFCFA}
+input:focus{outline:none;border-color:var(--teal)}
+input.err{border-color:#C0392B;background:#FDE2E0}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px}
+button{font:inherit;font-weight:700;border:0;border-radius:999px;padding:10px 20px;cursor:pointer}
+.primary{background:var(--rose);color:#fff}
+.ghost{background:#fff;color:var(--teal);border:2px solid var(--teal)}
+.small{padding:4px 12px;font-size:.8rem;margin-top:6px}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.92rem}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--mute);font-size:.85rem}
+.expired{color:#C0392B;font-weight:700}.soon{color:#B35C00;font-weight:700}.fine{color:var(--teal)}.todo{color:var(--mute);font-weight:700}
+textarea{width:100%;min-height:120px;border:1px dashed var(--line);border-radius:10px;padding:10px;font:inherit;font-size:.92rem;background:#FFFCFA}
+.msg{font-weight:700;color:var(--teal);min-height:1.6em}.msg.bad{color:#C0392B}
+.bad{color:#C0392B;font-weight:700}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+footer{color:var(--mute);font-size:.8rem;margin-top:24px}
+footer a{color:var(--teal)}
+@media (max-width:560px){thead{display:none}table,tbody,tr,td{display:block;width:100%}tr{border:1px solid var(--line);border-radius:10px;padding:6px 10px;margin-bottom:8px}td{border:0;padding:2px 0}td::before{content:attr(data-l)"：";color:var(--mute);font-size:.8rem}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>耗材效期與補貨清單</h1>
+  <p class="sub">精油、凝膠、色料、睫毛膠、保養品，開封後能用多久、還剩幾瓶，一張表看清楚：先到期的先用，快不夠的列成待補清單。資料只在妳的瀏覽器裡，重新整理就會清空，也不會幫妳下單。</p>
+
+  <div class="card">
+    <h2>① 耗材清單</h2>
+    <p class="note">「開封後可用幾天」請照產品包裝或供應商的標示填，這裡不幫妳猜。開封日或效期不知道就先空著，會標「待填」。庫存和安全存量用同一個單位（例：瓶、罐、盒）。</p>
+    <div id="list"></div>
+    <div class="row"><button type="button" class="ghost" id="add">＋ 再加一樣</button><label style="display:inline-block">用哪一天來算<input type="date" id="today"></label></div>
+  </div>
+
+  <div class="card">
+    <h2>② 依到期先後排</h2>
+    <div class="tbl"><table><thead><tr><th>品名</th><th>實際到期日</th><th>還剩幾天</th><th>庫存</th></tr></thead><tbody id="sorted"></tbody></table></div>
+    <p class="note">實際到期日＝「包裝上的到期日」和「開封日＋開封後可用天數」比較早的那一天。</p>
+  </div>
+
+  <div class="card">
+    <h2>③ 待補清單</h2>
+    <p class="note">庫存低於妳設的安全存量就會列進來。這只是清單草稿，要不要叫貨、叫多少，妳自己決定。</p>
+    <textarea id="buy" readonly aria-label="待補清單"></textarea>
+    <div class="row"><button type="button" class="primary" id="copy">複製待補清單</button></div>
+    <p class="msg" id="copymsg" aria-live="polite"></p>
+  </div>
+
+  <footer>美業 AI 技能包 v0.3.0｜內容出自《AI 時代，美業人的逆襲指南》第 13 章｜效期以產品標示與供應商資料為準｜<a href="https://github.com/hourlight-skills/beauty-ai-skills/issues" target="_blank" rel="noopener">回報問題</a></footer>
+</div>
+<script>
+(function(){
+var $=function(id){return document.getElementById(id);};
+function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;}
+function lab(text,input){var l=el('label','',text);l.appendChild(input);return l;}
+// 日期一律用 UTC 的「第幾天」來算，避免時區造成差一天
+var day=function(s){var m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s||'');return m?Date.UTC(+m[1],+m[2]-1,+m[3])/864e5:NaN;};
+var show=function(d){var t=new Date(d*864e5);return t.getUTCFullYear()+'/'+String(t.getUTCMonth()+1).padStart(2,'0')+'/'+String(t.getUTCDate()).padStart(2,'0');};
+var items=[];
+var F=[['name','品名','例：甜橙精油','text'],['opened','開封日','','date'],['days','開封後可用幾天','照標示填','number'],['exp','包裝上的到期日','','date'],['stock','現在庫存','例：2','number'],['safe','安全存量','例：3','number'],['unit','單位','例：瓶','text']];
+function add(){var it={f:{}};var box=el('div','item'),g=el('div','g');
+  F.forEach(function(f){var i=el('input');i.type=f[3];if(f[2])i.placeholder=f[2];if(f[3]==='number'){i.min='0';i.inputMode='decimal';}i.oninput=calc;i.onchange=calc;it.f[f[0]]=i;g.appendChild(lab(f[1],i));});
+  box.appendChild(g);it.msg=el('div','');box.appendChild(it.msg);
+  var rm=el('button','ghost small','刪掉這一樣');rm.type='button';rm.onclick=function(){items=items.filter(function(x){return x!==it;});box.remove();calc();};box.appendChild(rm);
+  $('list').appendChild(box);items.push(it);calc();}
+function nonneg(inp,label,P){var t=inp.value.trim();inp.classList.remove('err');if(t==='')return null;var v=Number(t);
+  if(!Number.isFinite(v)||v<0||v>1e7){P.push(label+'要是 0 以上的正常數字');inp.classList.add('err');return NaN;}return v;}
+function calc(){
+  var today=day($('today').value);if(isNaN(today)){var n=new Date();today=Date.UTC(n.getFullYear(),n.getMonth(),n.getDate())/864e5;}
+  var rows=[],buy=[],unknown=[];
+  items.forEach(function(it,k){var f=it.f,P=[],name=f.name.value.trim()||('第 '+(k+1)+' 樣'),unit=f.unit.value.trim();
+    var days=nonneg(f.days,'開封後可用天數',P),stock=nonneg(f.stock,'庫存',P),safe=nonneg(f.safe,'安全存量',P);
+    var op=day(f.opened.value),ex=day(f.exp.value),cands=[],note=[];
+    if(!isNaN(ex))cands.push(ex);
+    if(!isNaN(op)&&Number.isFinite(days))cands.push(op+Math.floor(days));
+    if(!isNaN(op)&&days==null)note.push('有開封日，但開封後可用天數待填');
+    if(isNaN(op)&&Number.isFinite(days))note.push('有可用天數，但開封日待填');
+    var real=cands.length?Math.min.apply(null,cands):NaN;
+    it.msg.textContent='';if(P.length)it.msg.appendChild(el('span','bad','先改：'+P.join('、')));
+    if(note.length)it.msg.appendChild(el('div','todo',note.join('；')));
+    rows.push({name:name,real:real,left:isNaN(real)?NaN:real-today,stock:stock,unit:unit});
+    if(Number.isFinite(stock)&&Number.isFinite(safe)){if(stock<safe)buy.push('・'+name+'：現在 '+stock+(unit||'')+'，安全存量 '+safe+(unit||'')+'，至少補 '+(safe-stock)+(unit||''));}
+    else if(f.name.value.trim())unknown.push(name);});
+  rows.sort(function(a,b){var x=isNaN(a.left),y=isNaN(b.left);if(x!==y)return x?1:-1;return (a.left||0)-(b.left||0);});
+  var tb=$('sorted');tb.textContent='';
+  rows.forEach(function(r){var tr=el('tr');
+    var c1=el('td','',r.name);c1.dataset.l='品名';
+    var c2=el('td',isNaN(r.real)?'todo':'',isNaN(r.real)?'待填':show(r.real));c2.dataset.l='實際到期日';
+    var cls=isNaN(r.left)?'todo':r.left<0?'expired':r.left<=30?'soon':'fine';
+    var c3=el('td',cls,isNaN(r.left)?'待填（開封日＋可用天數，或包裝到期日，至少填一組）':r.left<0?'已過期 '+(-r.left)+' 天，請先別用':r.left===0?'今天到期':'還剩 '+r.left+' 天');c3.dataset.l='還剩幾天';
+    var c4=el('td','',r.stock==null?'待填':String(r.stock)+(r.unit||''));c4.dataset.l='庫存';
+    tr.append(c1,c2,c3,c4);tb.appendChild(tr);});
+  var text=buy.length?('待補清單（'+show(today)+'）\n'+buy.join('\n')):'目前沒有低於安全存量的品項。';
+  if(unknown.length)text+='\n\n庫存或安全存量待填：'+unknown.join('、');
+  $('buy').value=text;}
+$('copy').onclick=function(){var t=$('buy').value,m=$('copymsg');
+  function ok(){m.className='msg';m.textContent='已複製，可以貼到 LINE 或備忘錄。';}
+  function fb(){var a=$('buy');a.focus();a.select();var d=false;try{d=document.execCommand('copy');}catch(e){}if(d)ok();else{m.className='msg bad';m.textContent='沒辦法自動複製，請長按上面的文字全選複製。';}}
+  if(navigator.clipboard&&window.isSecureContext)navigator.clipboard.writeText(t).then(ok,fb);else fb();};
+$('add').onclick=add;$('today').onchange=calc;
+add();add();
+})();
+</script>
+</body>
+</html>

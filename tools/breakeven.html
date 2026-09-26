@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>打平線計算機｜美業 AI 技能包</title>
+<style>
+:root{--bg:#F0EEE9;--card:#fff;--ink:#3D3835;--mute:#6E675F;--rose:#7D4351;--teal:#007B7F;--orange:#E88A2C;--pink:#FFCCCC;--line:#DDD6CE}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.7}
+.wrap{max-width:900px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:1.6rem;margin:0 0 4px;color:var(--rose)}
+.sub{color:var(--mute);margin:0 0 18px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media (max-width:720px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border-radius:18px;padding:20px;box-shadow:0 2px 10px rgba(125,67,81,.08)}
+h2{font-size:1.05rem;margin:0 0 10px;color:var(--teal)}
+label{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:6px 0;border-bottom:1px dashed var(--line)}
+label span{flex:1}
+input[type=number]{width:120px;font:inherit;text-align:right;padding:6px 8px;border:2px solid var(--line);border-radius:10px;background:#FFFCFA}
+input[type=number]:focus{outline:none;border-color:var(--teal)}
+input[type=number].err{border-color:#C0392B;background:#FDE2E0}
+.tabs{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.tabs button{font:inherit;font-weight:700;border:2px solid var(--rose);background:#fff;color:var(--rose);border-radius:999px;padding:6px 16px;cursor:pointer}
+.tabs button.on{background:var(--rose);color:#fff}
+.big{font-size:3rem;font-weight:900;color:var(--rose);line-height:1.1}
+.big small{font-size:1rem;color:var(--ink);font-weight:700}
+.big.msg{font-size:1.3rem;color:#C0392B}
+.wk{font-size:1.1rem;margin:4px 0 14px}
+.calc{background:#FFF7EF;border-left:5px solid var(--orange);padding:10px 14px;border-radius:8px;font-size:.95rem;white-space:pre-line}
+.slider{margin:10px 0}
+.slider input{width:100%;accent-color:var(--teal)}
+body.emp .shop-only{display:none}
+.stress{display:flex;justify-content:space-between;gap:10px;background:#EAF6F5;border-radius:10px;padding:8px 12px;margin-top:6px}
+.note{color:var(--mute);font-size:.85rem;margin-top:10px}
+.assume{background:#FFF7EF;border-radius:10px;padding:8px 12px;font-size:.85rem;margin:10px 0 0}
+button:focus-visible,input:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+footer{color:var(--mute);font-size:.8rem;margin-top:24px}
+footer a{color:var(--teal)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>打平線計算機</h1>
+  <p class="sub">每月固定成本 ÷ 每位客人的毛利 ＝ 每個月至少要幾位客人。數字只在妳的瀏覽器裡算，不會上傳。</p>
+  <div class="tabs"><button type="button" id="t-shop" class="on">我開店／工作室</button><button type="button" id="t-emp">我拿抽成（純抽成估算）</button></div>
+  <div class="grid">
+    <div class="card">
+      <h2 id="h-fixed">每月固定支出（元）</h2>
+      <div id="fixed"></div>
+      <h2 style="margin-top:16px">每位客人（元）</h2>
+      <label><span>平均客單價</span><input type="number" id="price" value="1500" min="0" inputmode="decimal"></label>
+      <label class="shop-only"><span>平均耗材成本</span><input type="number" id="supply" value="200" min="0" inputmode="decimal"></label>
+      <label class="shop-only"><span>刷卡或平台手續費</span><input type="number" id="fee" value="50" min="0" inputmode="decimal"></label>
+      <label id="rate-row" hidden><span>我的抽成（%，大於 0、最多 100）</span><input type="number" id="rate" value="40" min="1" max="100" inputmode="decimal"></label>
+      <p class="note">預設是例子（除了最低工資，其他都是假設數字），換成妳的。沒有的項目請填 0，空著不算。「自己的薪水」很多人忘了算；不知道填多少，先用 2026 年最低工資月薪 29,500 元。</p>
+      <p class="assume" id="emp-assume" hidden>這個模式的假設：只算「客單價 × 抽成」，沒有底薪、保障薪資或獎金。如果妳有底薪，實際要接的客人會比這裡算的少；受僱的話，底薪與最低工資保障另外算，這裡沒算進去。</p>
+    </div>
+    <div class="card">
+      <h2>結果</h2>
+      <div class="big" id="n">–<small> 位／月</small></div>
+      <div class="wk" id="w"></div>
+      <div class="calc" id="c"></div>
+      <h2 style="margin-top:18px">如果成本漲了（客單價不變）</h2>
+      <div class="slider"><div><span id="r-name">房租</span>漲 <b id="rv">3</b>%</div><input type="range" id="r" min="0" max="30" value="3" aria-label="房租漲幅"></div>
+      <div class="slider shop-only"><div>耗材漲 <b id="sv">10</b>%</div><input type="range" id="s" min="0" max="50" value="10" aria-label="耗材漲幅"></div>
+      <div class="stress"><span id="lab1">只有房租漲</span><b id="n2a">–</b></div>
+      <div class="stress shop-only"><span>只有耗材漲</span><b id="n2b">–</b></div>
+      <div class="stress shop-only"><span>兩個一起漲</span><b id="n2c">–</b></div>
+      <p class="note" id="say"></p>
+    </div>
+  </div>
+  <footer>美業 AI 技能包 v0.3.0｜內容出自《AI 時代，美業人的逆襲指南》開門做生意篇・三〈開店算帳〉｜最低工資：勞動部 2026 年公告（2026-09 查核）｜<a href="https://github.com/hourlight-skills/beauty-ai-skills/issues" target="_blank" rel="noopener">回報問題</a></footer>
+</div>
+<script>
+const SHOP=[['rent','房租',25000],['util','水電、網路',3000],['sys','預約系統、行銷',3000],['ins','保險、雜支',2000],['me','我自己的薪水',29500]];
+const EMP=[['rent','交通',2000],['util','進修、上課',2000],['sys','自己買的工具、耗材',1500],['ins','保險、雜支',1000],['me','我想要的月收入',29500]];
+let mode='shop';
+// 兩個模式各自記住填過的數字，切換不會被洗掉
+const store={shop:Object.fromEntries(SHOP.map(([k,,v])=>[k,String(v)])),emp:Object.fromEntries(EMP.map(([k,,v])=>[k,String(v)]))};
+const $=id=>document.getElementById(id), fmt=n=>n.toLocaleString('zh-TW',{maximumFractionDigits:2});
+// 結果超過這個數字就當作打錯（一個月十萬位客人不是小店的打平線）
+const MAX_N=100000, cents=v=>Math.round(v*100)/100, sane=v=>Number.isFinite(v)&&v>=0&&v<=MAX_N;
+const NAMES={price:'平均客單價',supply:'平均耗材成本',fee:'刷卡或平台手續費',rate:'我的抽成'};
+// 讀一格：空白算「沒填」，不是 0；非數字、負數、無限大都算錯
+function read(id,name,problems){const e=$(id),s=e.value.trim();e.classList.remove('err');
+  if(s===''){problems.push(`${name}（請填，沒有就填 0）`);e.classList.add('err');return NaN;}
+  const v=Number(s);if(!Number.isFinite(v)||v<0||v>1e10){problems.push(`${name}（要是 0 以上的正常數字）`);e.classList.add('err');return NaN;}
+  return v;}
+function build(){ const list=mode==='shop'?SHOP:EMP; const box=$('fixed'); box.textContent='';
+  list.forEach(([k,t])=>{const lb=document.createElement('label');const sp=document.createElement('span');sp.textContent=t;
+    const i=document.createElement('input');i.type='number';i.id='f-'+k;i.min='0';i.inputMode='decimal';i.value=store[mode][k];
+    i.addEventListener('input',()=>{store[mode][k]=i.value;});lb.append(sp,i);box.appendChild(lb);});
+  $('h-fixed').textContent=mode==='shop'?'每月固定支出（元）':'每月要打平的開銷（元）'; $('rate-row').hidden=mode==='shop'; $('emp-assume').hidden=mode==='shop';
+  $('r-name').textContent=mode==='shop'?'房租':'交通'; $('lab1').textContent=mode==='shop'?'只有房租漲':'只有交通漲';
+  $('r').setAttribute('aria-label',mode==='shop'?'房租漲幅':'交通漲幅');
+  document.body.classList.toggle('emp',mode!=='shop');
+  document.querySelectorAll('input').forEach(i=>i.oninput=calc); calc(); }
+function clearOut(msg){ $('n').className='big msg'; $('n').textContent=msg; $('w').textContent=''; $('c').textContent='';
+  ['n2a','n2b','n2c'].forEach(id=>$(id).textContent='–'); $('say').textContent=''; }
+function calc(){
+  $('rv').textContent=$('r').value; $('sv').textContent=$('s').value;
+  const list=mode==='shop'?SHOP:EMP, P=[];
+  const fx=list.map(([k,t])=>read('f-'+k,t,P)), price=read('price',NAMES.price,P);
+  let sup=0,fee=0,rate=0;
+  if(mode==='shop'){sup=read('supply',NAMES.supply,P);fee=read('fee',NAMES.fee,P);}
+  else{rate=read('rate',NAMES.rate,P);if(Number.isFinite(rate)&&(rate<=0||rate>100)){P.push('我的抽成（要大於 0、最多 100）');$('rate').classList.add('err');}}
+  if(P.length){clearOut('先把這幾格填好：'+P.join('、'));return;}
+  const fixed=fx.reduce((s,v)=>s+v,0);
+  // 金額一律算到「分」（小數兩位），畫面顯示的數字就是實際拿來除的數字
+  const m=cents(mode==='shop'? price-sup-fee : price*rate/100);
+  if(!(m>0)){clearOut('算不出來'); $('c').textContent= mode==='shop'?'每位客人的毛利是 0 或負的：客單價要高過耗材加手續費。':'每位客人妳拿到的不到 1 分錢：客單價或抽成太小。'; return; }
+  const n=Math.ceil(fixed/m);
+  if(!sane(n)){clearOut('數字不合理，請檢查'); $('c').textContent=`算出來要 ${Number.isFinite(n)?fmt(n):'無限多'} 位客人，超出估算範圍（${fmt(MAX_N)} 位以內）。請檢查客單價、成本有沒有打錯位數。`; return; }
+  $('n').className='big'; $('n').innerHTML=`${fmt(n)}<small> 位／月</small>`;
+  const wk=n/4; $('w').textContent= Math.floor(wk)===Math.ceil(wk) ? `換成每週（以每月 4 週估算）：大約 ${wk} 位` : `換成每週（以每月 4 週估算）：大約 ${Math.floor(wk)} 到 ${Math.ceil(wk)} 位`;
+  $('c').textContent = mode==='shop'
+    ? `每位客人毛利 = ${fmt(price)} − ${fmt(sup)} − ${fmt(fee)} = ${fmt(m)}\n固定成本 = ${fmt(fixed)}\n打平線 = ${fmt(fixed)} ÷ ${fmt(m)} = ${(fixed/m).toFixed(1)} → ${fmt(n)} 位`
+    : `每位客人我拿到 = ${fmt(price)} × ${rate}% = ${fmt(m)}\n要打平的開銷 = ${fmt(fixed)}\n打平線 = ${fmt(fixed)} ÷ ${fmt(m)} = ${(fixed/m).toFixed(1)} → ${fmt(n)} 位`;
+  // 三種情境分開算：只漲房租（受僱模式是交通）、只漲耗材、兩個一起
+  const rentUp=fx[0]*(+$('r').value)/100, supUp=sup*(+$('s').value)/100;
+  const show=(id,f,mm)=>{mm=cents(mm);const v=mm>0?Math.ceil(f/mm):NaN;$(id).textContent=sane(v)?`${fmt(v)} 位／月（多 ${fmt(v-n)} 位）`:(mm>0?'數字不合理，請檢查':'算不出來（毛利變 0 或負的）');return sane(v)?v:NaN;};
+  const a=show('n2a',fixed+rentUp,m);
+  let worst=a;
+  if(mode==='shop'){show('n2b',fixed,m-supUp);worst=show('n2c',fixed+rentUp,m-supUp);}
+  const diff=worst-n;
+  $('say').textContent = !Number.isFinite(worst)?'成本漲到毛利沒了，要先調整價格或耗材。' : (diff<=1 ? '多一位聽起來很少，年年疊上去，就是一位熟客的位置。' : `最壞情況每個月要多接 ${diff} 位，先想想這些客人為什麼選妳。`);
+}
+$('t-shop').onclick=()=>{if(mode==='shop')return;mode='shop';$('t-shop').classList.add('on');$('t-emp').classList.remove('on');build();};
+$('t-emp').onclick=()=>{if(mode==='emp')return;mode='emp';$('t-emp').classList.add('on');$('t-shop').classList.remove('on');build();};
+build();
+</script>
+</body>
+</html>

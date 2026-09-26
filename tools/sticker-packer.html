@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LINE 貼圖打包器｜美業 AI 技能包</title>
+<style>
+:root{--bg:#F0EEE9;--card:#fff;--ink:#3D3835;--mute:#6E675F;--rose:#7D4351;--teal:#007B7F;--orange:#E88A2C;--pink:#FFCCCC;--line:#DDD6CE}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.7}
+.wrap{max-width:980px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:1.6rem;margin:0 0 4px;color:var(--rose)}
+.sub{color:var(--mute);margin:0 0 18px}
+.card{background:var(--card);border-radius:18px;padding:20px;box-shadow:0 2px 10px rgba(125,67,81,.08);margin-bottom:18px}
+.drop{border:3px dashed var(--teal);border-radius:16px;padding:28px 16px;text-align:center;background:#F4FBFA;cursor:pointer}
+.drop.over{background:#DDF3F1}
+.drop b{color:var(--teal);font-size:1.1rem}
+.steps{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 0;padding:0;list-style:none;font-size:.9rem;color:var(--mute)}
+.steps li{background:#FFF7EF;border-radius:999px;padding:2px 12px}
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+button{font:inherit;font-weight:700;border:0;border-radius:999px;padding:10px 20px;cursor:pointer}
+.primary{background:var(--rose);color:#fff}
+.primary:disabled{background:#C9B8BD;cursor:not-allowed}
+.ghost{background:#fff;color:var(--teal);border:2px solid var(--teal)}
+.checks{list-style:none;padding:0;margin:10px 0 0}
+.checks li{padding:4px 0}
+.ok{color:var(--teal)}.bad{color:#C0392B;font-weight:700}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.tile{border-radius:12px;padding:8px;text-align:center;border:2px solid var(--line)}
+.tile.main{border-color:var(--orange)}
+.tile img{width:100%;height:auto;display:block;border-radius:8px}
+.bg-light .tile img{background:#fff}
+.bg-dark .tile img{background:#2B2B2B}
+.bg-check .tile img{background:conic-gradient(#eee 25%,#fff 0 50%,#eee 0 75%,#fff 0) 0 0/16px 16px}
+.tile small{display:block;color:var(--mute)}
+.tile label{font-size:.8rem;cursor:pointer}
+.warn{color:#C0392B;font-size:.8rem}
+.note{color:var(--mute);font-size:.85rem}
+footer{color:var(--mute);font-size:.8rem;margin-top:24px}
+.pick{margin:10px 0 6px}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.confirm{display:block;background:#FFF7EF;border-radius:10px;padding:8px 12px;margin:8px 0;font-size:.9rem;cursor:pointer}
+.tile small{overflow-wrap:anywhere}
+.small{padding:4px 12px;font-size:.8rem;margin-top:6px}
+button:disabled{opacity:.5;cursor:not-allowed}
+footer a{color:var(--teal)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>LINE 貼圖打包器</h1>
+  <p class="sub">把 AI 畫好、字也加好的貼圖拖進來，它會幫妳裁邊、調尺寸、做主要圖片和標籤圖片，最後打包成可以上傳的 ZIP。圖片只在妳的瀏覽器裡處理，不會上傳。</p>
+
+  <div class="card">
+    <div class="drop" id="drop"><b>把 8 或 16 張貼圖拖到這裡</b><br>
+      <button type="button" class="ghost pick" id="pick">或按這裡選檔案</button><br>
+      <span class="note">PNG 最好，要先去背。單張請在 4000×4000 像素以內。</span>
+      <input type="file" id="file" accept="image/png,image/webp,image/jpeg" multiple class="vh" tabindex="-1" aria-hidden="true"></div>
+    <ul class="steps"><li>① 裁掉多餘的透明邊</li><li>② 等比縮到 350×300 內</li><li>③ 放到 370×320 正中間（四周自然留 10px）</li><li>④ 做 main 240×240、tab 96×74</li><li>⑤ 檢查每張 1MB 以下</li></ul>
+    <p class="note" id="status" aria-live="polite"></p>
+    <ul class="checks" id="fails"></ul>
+  </div>
+
+  <div class="card" id="res" hidden>
+    <div class="bar">
+      <button class="primary" id="zip">下載 ZIP</button>
+      <button class="ghost" data-bg="bg-light">淺色底看看</button>
+      <button class="ghost" data-bg="bg-dark">深色底看看</button>
+      <button class="ghost" data-bg="bg-check">透明格子</button>
+      <button class="ghost" id="clear">清空重來</button>
+    </div>
+    <ul class="checks" id="checks"></ul>
+    <p class="note">橘框那張會拿來做主要圖片（main）和標籤圖片（tab），點別張的「當主圖」可以換。</p>
+    <div class="grid bg-check" id="grid"></div>
+  </div>
+
+  <div class="card">
+    <b>上傳前還要自己看的</b>
+    <ul class="note">
+      <li>每一張的字唸出來對一次（錯字是常見退件原因）</li>
+      <li>沒有店名 logo、優惠、開賣日、網址、電話</li>
+      <li>全部角色的臉型、髮型、衣服、顏色一樣</li>
+      <li>送審時「是否使用AI」選「使用AI」，指令與修改紀錄存好</li>
+      <li>規格以 LINE Creators Market 官方當下公告為準：creator.line.me/zh-hant/guideline/sticker/</li>
+    </ul>
+  </div>
+  <footer>美業 AI 技能包 v0.3.0｜內容出自《AI 時代，美業人的逆襲指南》第 18 章｜規格查核日 2026-09｜<a href="https://github.com/hourlight-skills/beauty-ai-skills/issues" target="_blank" rel="noopener">回報問題</a></footer>
+</div>
+<script>
+const W=370,H=320,PAD=10, OK_COUNTS=[8,16,24,32,40], MAXB=1024*1024;
+const MAX_SIDE=4000, MAX_PX=16000000, ACCEPT=/^image\/(png|webp|jpeg)$/;
+let items=[], mainId=null, seq=0, batch=0, busy=0, previews=[];
+const $=id=>document.getElementById(id);
+function el(tag,cls,text){const e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e;}
+// ── 圖片處理 ──
+// 看檔案開頭的位元組判斷真正的格式，不信副檔名
+async function sniff(file){const u=new Uint8Array(await file.slice(0,12).arrayBuffer());
+  if(u[0]===0x89&&u[1]===0x50&&u[2]===0x4E&&u[3]===0x47)return 'PNG';
+  if(u[0]===0xFF&&u[1]===0xD8&&u[2]===0xFF)return 'JPG';
+  if(u[0]===0x52&&u[1]===0x49&&u[2]===0x46&&u[3]===0x46&&u[8]===0x57&&u[9]===0x45&&u[10]===0x42&&u[11]===0x50)return 'WebP';
+  return '';}
+function loadImg(file){return new Promise((ok,no)=>{const u=URL.createObjectURL(file);const im=new Image();
+  im.onload=()=>{URL.revokeObjectURL(u);ok(im);};im.onerror=()=>{URL.revokeObjectURL(u);no(new Error('圖片讀不出來，檔案可能壞了'));};im.src=u;});}
+// 裁掉透明邊；裁完只留裁好的小畫布，原尺寸畫布馬上釋放
+function trim(im){const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;
+  const x=c.getContext('2d',{willReadFrequently:true});if(!x)throw new Error('瀏覽器沒辦法處理這張圖');x.drawImage(im,0,0);
+  const cw=c.width,chh=c.height,d=x.getImageData(0,0,cw,chh).data;let a=cw,b=chh,e=-1,f=-1;
+  for(let y=0;y<chh;y++)for(let i=0;i<cw;i++){if(d[(y*cw+i)*4+3]>8){if(i<a)a=i;if(i>e)e=i;if(y<b)b=y;if(y>f)f=y;}}
+  // 只量四個角：數出幾個角不透明（0＝四角都透明、1–3＝部分、4＝全不透明）
+  const al=(i,y)=>d[(y*cw+i)*4+3]>8, opq=[al(0,0),al(cw-1,0),al(0,chh-1),al(cw-1,chh-1)].filter(Boolean).length;
+  if(e<0){c.width=c.height=0;return {empty:true,opq:0};}
+  // 裁完直接縮到貼圖實際用得到的大小（最大 350×300；main、tab 比它小），不留大畫布
+  const w0=e-a+1,h0=f-b+1,s=Math.min(1,(W-PAD*2)/w0,(H-PAD*2)/h0),w=Math.max(1,Math.round(w0*s)),h=Math.max(1,Math.round(h0*s));
+  const t=document.createElement('canvas');t.width=w;t.height=h;const tx=t.getContext('2d');tx.imageSmoothingQuality='high';tx.drawImage(c,a,b,w0,h0,0,0,w,h);
+  c.width=c.height=0;return {c:t,w,h,opq};}
+function fit(src,cw,ch,pad){const o=document.createElement('canvas');o.width=cw;o.height=ch;const x=o.getContext('2d');
+  if(src.empty)return o;
+  const s=Math.min((cw-pad*2)/src.w,(ch-pad*2)/src.h);const w=Math.round(src.w*s),h=Math.round(src.h*s);
+  x.imageSmoothingQuality='high';x.drawImage(src.c,0,0,src.w,src.h,Math.round((cw-w)/2),Math.round((ch-h)/2),w,h);return o;}
+const toBlob=c=>new Promise((r,j)=>c.toBlob(b=>b?r(b):j(new Error('轉成 PNG 失敗')),'image/png'));
+// ── PNG 加 72dpi（pHYs）──
+const CRC=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0;}return t;})();
+function crc32(u8,s=0,e=u8.length){let c=0xFFFFFFFF;for(let i=s;i<e;i++)c=CRC[(c^u8[i])&255]^(c>>>8);return (c^0xFFFFFFFF)>>>0;}
+async function withDpi(blob){const u=new Uint8Array(await blob.arrayBuffer());
+  const has=(()=>{let p=8;while(p<u.length){const len=(u[p]<<24|u[p+1]<<16|u[p+2]<<8|u[p+3])>>>0;const t=String.fromCharCode(u[p+4],u[p+5],u[p+6],u[p+7]);if(t==='pHYs')return true;if(t==='IDAT')return false;p+=12+len;}return false;})();
+  if(has)return u;const ch=new Uint8Array(21);const dv=new DataView(ch.buffer);dv.setUint32(0,9);ch.set([112,72,89,115],4);dv.setUint32(8,2835);dv.setUint32(12,2835);ch[16]=1;dv.setUint32(17,crc32(ch,4,17));
+  const out=new Uint8Array(u.length+21);out.set(u.subarray(0,33));out.set(ch,33);out.set(u.subarray(33),54);return out;}
+// ── ZIP（不壓縮，PNG 本來就壓過）──
+function zip(files){const enc=new TextEncoder();let parts=[],cd=[],off=0;
+  for(const f of files){const name=enc.encode(f.name),crc=crc32(f.data),n=f.data.length;
+    const lh=new Uint8Array(30+name.length),v=new DataView(lh.buffer);v.setUint32(0,0x04034b50,true);v.setUint16(4,20,true);v.setUint16(8,0,true);v.setUint32(14,crc,true);v.setUint32(18,n,true);v.setUint32(22,n,true);v.setUint16(26,name.length,true);lh.set(name,30);
+    const ch=new Uint8Array(46+name.length),w=new DataView(ch.buffer);w.setUint32(0,0x02014b50,true);w.setUint16(4,20,true);w.setUint16(6,20,true);w.setUint32(16,crc,true);w.setUint32(20,n,true);w.setUint32(24,n,true);w.setUint16(28,name.length,true);w.setUint32(42,off,true);ch.set(name,46);
+    parts.push(lh,f.data);cd.push(ch);off+=lh.length+n;}
+  const cdLen=cd.reduce((s,c)=>s+c.length,0),end=new Uint8Array(22),e=new DataView(end.buffer);e.setUint32(0,0x06054b50,true);e.setUint16(8,files.length,true);e.setUint16(10,files.length,true);e.setUint32(12,cdLen,true);e.setUint32(16,off,true);
+  return new Blob([...parts,...cd,end],{type:'application/zip'});}
+// ── 流程 ──
+const MAX_ITEMS=40, BATCH_PX=200000000;
+let packing=false;
+// 一次只處理一批：上一批還在讀時，不收新的（不會默默取消上一批）；按「清空重來」會換序號，還在讀的就不會再加回來
+async function add(files){
+  if(packing){$('status').textContent='正在打包，打包完再加圖';return;}
+  if(busy){$('status').textContent='上一批還在處理，等它跑完再加';return;}
+  const my=++batch, fails=[];let px=0;busy=1;$('fails').textContent='';render();
+  for(let k=0;k<files.length;k++){const f=files[k];if(my!==batch)break;
+    $('status').textContent=`處理中⋯第 ${k+1}／${files.length} 張`;
+    try{
+      if(items.length>=MAX_ITEMS)throw new Error(`已經有 ${MAX_ITEMS} 張（LINE 一組最多 40 張），這張沒有加進來`);
+      if(!ACCEPT.test(f.type))throw new Error('只收 PNG、WebP、JPG');
+      const fmt=await sniff(f);if(!fmt)throw new Error('檔案內容不是 PNG、WebP、JPG');
+      const im=await loadImg(f);const iw=im.naturalWidth,ih=im.naturalHeight;
+      if(iw>MAX_SIDE||ih>MAX_SIDE||iw*ih>MAX_PX)throw new Error(`圖太大（${iw}×${ih}），請先縮到單邊 4000 像素以內再放進來`);
+      if(px+iw*ih>BATCH_PX)throw new Error('這一批圖加起來太大，請分幾批放進來');
+      px+=iw*ih;
+      const box=trim(im);const data=await withDpi(await toBlob(fit(box,W,H,PAD)));
+      if(my!==batch)break;
+      const dup=items.some(i=>i.name===f.name&&i.size===f.size);
+      items.push({id:++seq,name:f.name,size:f.size,fmt,box,data,empty:!!box.empty,opq:box.opq||0,ok:false,dup});
+    }catch(e){fails.push([f.name,e&&e.message?e.message:'讀不出來']);}
+  }
+  if(my===batch)busy=0;
+  if(my===batch){
+    items.sort((a,b)=>a.name.localeCompare(b.name,'zh-Hant',{numeric:true}));
+    if(!items.some(i=>i.id===mainId&&!i.empty)){const first=items.find(i=>!i.empty);mainId=first?first.id:null;}
+    $('status').textContent='';
+    const ul=$('fails');fails.forEach(([n,m])=>{const li=el('li','bad');li.textContent=`✗ ${n}：${m}`;ul.appendChild(li);});
+  }
+  render();}
+function num(i){return String(i+1).padStart(2,'0')+'.png';}
+const needOk=i=>!i.empty&&i.opq>0;
+function render(){ previews.forEach(u=>URL.revokeObjectURL(u));previews=[];
+  $('res').hidden=!items.length&&!busy; const grid=$('grid');grid.textContent='';
+  items.forEach((it,i)=>{const t=el('div','tile'+(it.id===mainId?' main':''));
+    const u=URL.createObjectURL(new Blob([it.data],{type:'image/png'}));previews.push(u);
+    const img=el('img');img.src=u;img.alt='';t.appendChild(img);
+    t.appendChild(el('small','',`${num(i)}　${(it.data.length/1024).toFixed(0)} KB`));
+    t.appendChild(el('small','',`原檔：${it.name}（${it.fmt}）`));
+    if(it.dup)t.appendChild(el('div','warn','跟另一張同檔名、同大小，可能放重複了'));
+    if(it.data.length>MAXB)t.appendChild(el('div','warn','超過 1MB'));
+    if(it.empty)t.appendChild(el('div','warn','整張都是透明的，沒有內容'));
+    else if(it.opq===4)t.appendChild(el('div','warn','四個角都不透明，可能還沒去背'));
+    else if(it.opq>0)t.appendChild(el('div','warn',`有 ${it.opq} 個角不透明，可能沒去乾淨，或圖畫到了邊`));
+    // 有角落不透明的，每一張要自己勾；新加進來的圖一律從沒勾開始
+    if(needOk(it)){const lb=el('label','');const cb=el('input');cb.type='checkbox';cb.checked=it.ok;cb.disabled=packing;
+      cb.onchange=()=>{it.ok=cb.checked;render();};lb.appendChild(cb);lb.appendChild(document.createTextNode(' 我看過這張的背景'));t.appendChild(lb);}
+    if(!it.empty){const lb=el('label');const r=el('input');r.type='radio';r.name='m';r.checked=it.id===mainId;r.disabled=packing;
+      r.onchange=()=>{mainId=it.id;render();};lb.appendChild(r);lb.appendChild(document.createTextNode(' 當主圖'));t.appendChild(lb);}
+    const rm=el('button','ghost small','移除');rm.type='button';rm.disabled=packing||!!busy;
+    rm.onclick=()=>{items=items.filter(x=>x.id!==it.id);if(mainId===it.id){const f2=items.find(x=>!x.empty);mainId=f2?f2.id:null;}render();};
+    t.appendChild(rm);
+    grid.appendChild(t);});
+  const n=items.length, big=items.filter(i=>i.data.length>MAXB).length, empty=items.filter(i=>i.empty).length,
+    allOpq=items.filter(i=>!i.empty&&i.opq===4).length, partOpq=items.filter(i=>!i.empty&&i.opq>0&&i.opq<4).length,
+    waiting=items.filter(i=>needOk(i)&&!i.ok).length, cnt={};items.forEach(i=>cnt[i.fmt]=(cnt[i.fmt]||0)+1);
+  const fmts=Object.keys(cnt).map(k=>`${k} ${cnt[k]} 張`).join('、');
+  const corner = (allOpq||partOpq)
+    ? [waiting===0, `角落檢查：${allOpq?`${allOpq} 張四個角都不透明`:''}${allOpq&&partOpq?'、':''}${partOpq?`${partOpq} 張部分角落不透明`:''}；${waiting?`還有 ${waiting} 張要在圖下方勾「我看過這張的背景」`:'都已逐張確認'}（本工具不會幫妳去背）`]
+    : [true, '角落檢查：每張的四個角都是透明的（只檢查四個角，其他地方請用深淺底自己看）'];
+  const c=[[OK_COUNTS.includes(n),`張數 ${n}（要 8／16／24／32／40 張其中一種）`],[!big,big?`${big} 張超過 1MB`:'每張都在 1MB 以下'],
+    [!empty,empty?`${empty} 張整張透明，請拿掉或換圖`:'每張都有內容'], corner,
+    [true,`來源格式：${fmts||'（無）'}；輸出已轉成 PNG，背景是否去乾淨請自己看一眼`],[true,'尺寸：370×320（長寬偶數）＋ main 240×240、tab 96×74，已自動處理']];
+  const ul=$('checks');ul.textContent='';c.forEach(([ok,t])=>ul.appendChild(el('li',ok?'ok':'bad',`${ok?'✓':'✗'} ${t}`)));
+  $('clear').disabled=packing; $('pick').disabled=packing;
+  $('zip').textContent=packing?'打包中⋯':'下載 ZIP';
+  $('zip').disabled=packing||!!busy||!OK_COUNTS.includes(n)||!!big||!!empty||waiting>0||mainId==null; }
+// 下載：先拍一張快照（圖片清單＋主圖），之後只用快照打包；打包中不能清空、追加、換主圖
+$('zip').onclick=async()=>{if($('zip').disabled||packing)return;
+  const snap=items.map(it=>({data:it.data})), mi=items.find(i=>i.id===mainId);if(!mi)return;
+  const mainBox=mi.box, count=snap.length;
+  packing=true;render();
+  try{const main=await withDpi(await toBlob(fit(mainBox,240,240,PAD)));const tab=await withDpi(await toBlob(fit(mainBox,96,74,4)));
+    const files=[{name:'main.png',data:main},{name:'tab.png',data:tab},...snap.map((it,i)=>({name:num(i),data:it.data}))];
+    if(files.length!==count+2||!OK_COUNTS.includes(count))throw new Error('張數對不上，請重新整理後再試');
+    const b=zip(files);if(b.size>=60*1024*1024){alert('ZIP 超過 60MB，請減少張數或縮小圖檔');return;}
+    const u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='stickers.zip';a.click();setTimeout(()=>URL.revokeObjectURL(u),10000);
+  }catch(e){alert('打包失敗：'+(e&&e.message?e.message:'請重試'));}
+  finally{packing=false;render();}};
+document.querySelectorAll('[data-bg]').forEach(b=>b.onclick=()=>{$('grid').className='grid '+b.dataset.bg;});
+$('clear').onclick=()=>{if(packing)return;batch++;busy=0;items=[];mainId=null;$('file').value='';$('fails').textContent='';$('status').textContent='';render();};
+const d=$('drop');$('pick').onclick=()=>{if(!packing)$('file').click();};
+$('file').onchange=e=>{const fs=[...e.target.files];e.target.value='';add(fs);};
+d.ondragover=e=>{e.preventDefault();d.classList.add('over');};d.ondragleave=()=>d.classList.remove('over');
+d.ondrop=e=>{e.preventDefault();d.classList.remove('over');add([...e.dataTransfer.files]);};
+</script>
+</body>
+</html>

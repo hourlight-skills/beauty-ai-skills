@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI 回答查核清單｜美業 AI 技能包</title>
+<style>
+:root{--bg:#F0EEE9;--card:#fff;--ink:#3D3835;--mute:#6E675F;--rose:#7D4351;--teal:#007B7F;--orange:#E88A2C;--pink:#FFCCCC;--line:#DDD6CE}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.7}
+.wrap{max-width:980px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:1.6rem;margin:0 0 4px;color:var(--rose)}
+h2{font-size:1.05rem;margin:0 0 10px;color:var(--teal)}
+.sub{color:var(--mute);margin:0 0 16px}
+.card{background:var(--card);border-radius:18px;padding:20px;box-shadow:0 2px 10px rgba(125,67,81,.08);margin-bottom:18px}
+.note{color:var(--mute);font-size:.88rem}
+textarea{display:block;width:100%;min-height:180px;font:inherit;font-size:16px;padding:10px;border:2px solid var(--line);border-radius:12px;background:#FFFCFA;resize:vertical}
+textarea:focus{outline:none;border-color:var(--teal)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px}
+button{font:inherit;font-weight:700;border:0;border-radius:999px;padding:10px 20px;cursor:pointer;min-height:44px}
+.primary{background:var(--rose);color:#fff}
+.ghost{background:#fff;color:var(--teal);border:2px solid var(--teal)}
+.grp{margin-top:12px}
+.grp h3{margin:0 0 4px;font-size:.98rem}
+.chk{display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px dashed var(--line)}
+.chk input{margin-top:6px;width:18px;height:18px;flex:none}
+.chk .w{font-weight:700}
+.ctx{color:var(--mute);font-size:.85rem;display:block}
+.how{font-size:.82rem;color:var(--teal)}
+.out mark{background:#FDE7C8;border-radius:4px;padding:0 2px}
+.out{white-space:pre-wrap;word-break:break-word;font-size:.95rem}
+.ok{color:var(--teal);font-weight:700}
+button:focus-visible,textarea:focus-visible,input:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+footer{color:var(--mute);font-size:.8rem;margin-top:24px}
+footer a{color:var(--teal)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>AI 回答查核清單</h1>
+  <p class="sub">AI 講得很有自信，不代表都對。把它的回答貼進來，這裡會挑出<b>數字、百分比、日期、金額、法條、研究、書名或人名</b>，列成一張要回原始來源核對的清單。工具不會替妳判斷對錯，它只負責幫妳把「要查的東西」找出來。文字只在妳的瀏覽器裡處理，不會上傳。</p>
+
+  <div class="card">
+    <h2>① 貼上 AI 的回答</h2>
+    <textarea id="t" placeholder="把 AI 的回答整段貼在這裡"></textarea>
+    <div class="row"><button type="button" class="primary" id="go">挑出要查的地方</button><button type="button" class="ghost" id="ex">放一段虛構的例子</button><button type="button" class="ghost" id="clr">清空</button></div>
+  </div>
+
+  <div class="card" id="res" hidden>
+    <h2>② 要回原始來源核對的清單</h2>
+    <p id="sum" class="note"></p>
+    <div id="groups"></div>
+    <div class="row"><button type="button" class="ghost" id="copy">複製清單</button><span id="msg" class="note"></span></div>
+  </div>
+
+  <div class="card" id="hl" hidden>
+    <h2>③ 原文標示</h2>
+    <div class="out" id="out"></div>
+  </div>
+
+  <div class="card note">
+    <b>怎麼查才算數：</b>找到那句話的<b>原始出處</b>（法規看全國法規資料庫或主管機關網站、研究看原論文、數字看發布的機關），不是另一篇轉述的文章，也不是再問一次 AI。查不到出處的，就先不要用在要給客人看的地方。
+  </div>
+
+  <footer>美業 AI 技能包 v0.3.0｜通用小工具｜<a href="index.html">回工具首頁</a>｜<a href="https://github.com/hourlight-skills/beauty-ai-skills/issues" target="_blank" rel="noopener">回報問題</a></footer>
+</div>
+<script>
+(function(){
+var $=function(id){return document.getElementById(id);};
+function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;}
+var N='[0-9０-９][0-9０-９,，.．]*';
+var KINDS=[
+  {k:'law',label:'法條與規定',how:'到全國法規資料庫或主管機關網站找原條文',re:new RegExp('第\\s*'+N+'\\s*條|《[^》]{1,30}(法|條例|辦法|準則|規則|事項|細則)》|[\\u4e00-\\u9fa5]{2,12}(法|條例|辦法|準則|細則)第','g')},
+  {k:'study',label:'研究、調查、報告',how:'找原論文或原報告，看樣本、年份、結論是不是這樣寫',re:/[^。，,；;\n]{0,12}(研究|調查|報告|統計|實驗|論文|期刊|study|survey|report)[^。，,；;\n]{0,12}/gi},
+  {k:'pct',label:'百分比與比例',how:'回原始數據確認分母、年份、是誰算的',re:new RegExp(N+'\\s*(%|％|成|倍|個百分點)','g')},
+  {k:'money',label:'金額與價格',how:'看官方價目或公告，注意幣別與日期',re:new RegExp('(NT\\$|US\\$|\\$|新臺幣|新台幣)\\s*'+N+'|'+N+'\\s*(元|萬元|億|萬|美元|塊)','g')},
+  {k:'date',label:'年份與日期',how:'確認是公告日、生效日還是研究年份',re:new RegExp('(19|20)[0-9]{2}\\s*年(\\s*'+N+'\\s*月(\\s*'+N+'\\s*日)?)?|(民國)?\\s*1[0-1][0-9]\\s*年|(19|20)[0-9]{2}[-/.][0-9]{1,2}([-/.][0-9]{1,2})?','g')},
+  {k:'quote',label:'書名、機構、引號裡的名稱',how:'搜尋全名，確認真的存在、名稱沒寫錯',re:/《[^》]{1,40}》|「[^」]{2,30}」|“[^”]{2,40}”|"[^"]{2,40}"|[A-Z][a-z]+(?:\s+(?:&\s+)?[A-Z][a-z]+)+/g},
+  {k:'num',label:'其他數字',how:'想一想這個數字是從哪裡來的',re:new RegExp(N+'\\s*(人|位|家|件|次|天|週|個月|年|歲|小時|分鐘|支|本|項|種)','g')}
+];
+function sentenceAround(t,s,e){var a=s,b=e;while(a>0&&!/[。！？!?\n]/.test(t[a-1])&&s-a<60)a--;while(b<t.length&&!/[。！？!?\n]/.test(t[b])&&b-e<60)b++;return t.slice(a,b+1).trim();}
+function run(){
+  var t=$('t').value;var hits=[];
+  KINDS.forEach(function(K,ki){K.re.lastIndex=0;var m;while((m=K.re.exec(t))){if(!m[0].trim()){K.re.lastIndex++;continue;}hits.push({s:m.index,e:m.index+m[0].length,w:m[0].trim(),k:ki});}});
+  hits.sort(function(a,b){return a.s-b.s||a.k-b.k||(b.e-b.s)-(a.e-a.s);});
+  var kept=[],end=-1;hits.forEach(function(h){if(h.s>=end){kept.push(h);end=h.e;}});
+  $('res').hidden=false;$('hl').hidden=false;
+  var g=$('groups');g.textContent='';
+  if(!t.trim()){$('sum').textContent='還沒有貼內容。';$('out').textContent='';return;}
+  if(!kept.length){$('sum').innerHTML='<span class="ok">沒有挑到數字、日期、法條或引用。</span>這不代表內容都對，只是沒有明顯要回頭查的具體說法。';}
+  else $('sum').textContent='找到 '+kept.length+' 處要查。每查完一項就打勾。';
+  KINDS.forEach(function(K,ki){var list=kept.filter(function(h){return h.k===ki;});if(!list.length)return;
+    var box=el('div','grp');box.appendChild(el('h3','',K.label+'（'+list.length+'）'));box.appendChild(el('span','how','怎麼查：'+K.how));
+    var seen={};list.forEach(function(h){var key=h.w+'|'+sentenceAround(t,h.s,h.e);if(seen[key])return;seen[key]=1;
+      var lb=el('label','chk');var cb=el('input');cb.type='checkbox';lb.appendChild(cb);var sp=el('span');sp.appendChild(el('span','w',h.w));sp.appendChild(el('span','ctx','出現在：'+sentenceAround(t,h.s,h.e)));lb.appendChild(sp);box.appendChild(lb);});
+    g.appendChild(box);});
+  var o=$('out');o.textContent='';var pos=0;kept.forEach(function(h){o.appendChild(document.createTextNode(t.slice(pos,h.s)));o.appendChild(el('mark','',t.slice(h.s,h.e)));pos=h.e;});o.appendChild(document.createTextNode(t.slice(pos)));
+}
+$('go').onclick=run;
+$('ex').onclick=function(){$('t').value='【虛構的 AI 回答，專門用來示範哪些地方要查；裡面的數字、研究、規定都不可以引用】\n根據衛福部 2023 年公告的《美容定型化契約應記載及不得記載事項》，消費總金額 1 萬元以上要簽書面契約，全額預付的折扣不得高於 20%。另外一項 2019 年發表在期刊上的研究，找了 33 位美甲店老闆，發現每月發一次保養提醒能讓回購率提高 40%。Harvard Medical School 也有類似結論。一瓶 10ml 的真正薰衣草精油大約 NT$800。';run();};
+$('clr').onclick=function(){$('t').value='';$('res').hidden=true;$('hl').hidden=true;$('t').focus();};
+$('copy').onclick=function(){var lines=['AI 回答查核清單'];[].forEach.call(document.querySelectorAll('#groups .grp'),function(b){lines.push('');lines.push('■ '+b.querySelector('h3').textContent);[].forEach.call(b.querySelectorAll('.chk'),function(c){lines.push((c.querySelector('input').checked?'☑ ':'☐ ')+c.querySelector('.w').textContent+'｜'+c.querySelector('.ctx').textContent.replace(/^出現在：/,''));});});
+  var t=lines.join('\n');(navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(t):Promise.reject()).then(function(){$('msg').textContent='已複製。';},function(){prompt('複製下面這段：',t);});};
+})();
+</script>
+</body>
+</html>

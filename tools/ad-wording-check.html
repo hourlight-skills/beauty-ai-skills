@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>廣告字眼檢查器｜美業 AI 技能包</title>
+<style>
+:root{--bg:#F0EEE9;--card:#fff;--ink:#3D3835;--mute:#6E675F;--rose:#7D4351;--teal:#007B7F;--orange:#E88A2C;--pink:#FFCCCC;--line:#DDD6CE;
+  --r:#C0392B;--rbg:#FDE2E0;--o:#B35C00;--obg:#FFE9D2;--y:#8A6D00;--ybg:#FFF5C2;--b:#5B3C88;--bbg:#EDE4F7}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.7}
+.wrap{max-width:860px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:1.6rem;margin:0 0 4px;color:var(--rose)}
+.sub{color:var(--mute);margin:0 0 20px}
+.card{background:var(--card);border-radius:18px;padding:20px;box-shadow:0 2px 10px rgba(125,67,81,.08);margin-bottom:18px}
+textarea{width:100%;min-height:180px;border:2px solid var(--line);border-radius:12px;padding:12px;font:inherit;font-size:1rem;resize:vertical;background:#FFFCFA}
+textarea:focus{outline:none;border-color:var(--teal)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}
+button{font:inherit;font-weight:700;border:0;border-radius:999px;padding:10px 20px;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+.primary{background:var(--rose);color:#fff}
+.ghost{background:transparent;color:var(--teal);border:2px solid var(--teal)}
+.tip{font-size:.85rem;color:var(--mute)}
+.scope{border:0;padding:0;margin:12px 0 0;display:flex;gap:6px 14px;flex-wrap:wrap;font-size:.92rem}
+.scope legend{font-weight:700;margin-bottom:4px;padding:0}
+.scope label{cursor:pointer}
+.sum{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.pill{border-radius:999px;padding:4px 14px;font-weight:700;font-size:.95rem}
+.pr{background:var(--rbg);color:var(--r)}.po{background:var(--obg);color:var(--o)}.py{background:var(--ybg);color:var(--y)}.pb{background:var(--bbg);color:var(--b)}
+.pn{background:#EFEDEA;color:var(--ink);font-weight:500}
+#marked{white-space:pre-wrap;word-break:break-word;background:#FFFCFA;border-radius:12px;padding:14px;border:1px dashed var(--line)}
+mark{border-radius:4px;padding:0 2px}
+mark.r{background:var(--rbg);color:var(--r);font-weight:700}
+mark.o{background:var(--obg);color:var(--o);font-weight:700}
+mark.y{background:var(--ybg);color:var(--y)}
+mark.b{background:var(--bbg);color:var(--b)}
+table{width:100%;border-collapse:collapse;font-size:.95rem}
+th,td{text-align:left;padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--mute);font-weight:700;font-size:.85rem}
+.src{display:block;font-size:.8rem;color:var(--mute)}
+.formula{background:#EAF6F5;border-left:5px solid var(--teal);padding:10px 14px;border-radius:8px;margin:0 0 12px}
+.legend{font-size:.85rem;color:var(--mute);margin:10px 0 0;padding-left:18px}
+footer{color:var(--mute);font-size:.8rem;margin-top:24px;overflow-wrap:anywhere}
+footer a{color:var(--teal)}
+/* 手機：表格改成一筆一張卡，「為什麼」照樣看得到 */
+@media (max-width:560px){h1{font-size:1.3rem}
+  thead{display:none} table,tbody,tr,td{display:block;width:100%}
+  tr{border:1px solid var(--line);border-radius:10px;padding:6px 10px;margin-bottom:10px}
+  td{border:0;padding:3px 0} td::before{content:attr(data-l)"：";color:var(--mute);font-size:.8rem}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>廣告字眼檢查器</h1>
+  <p class="sub">貼文、價目表、官網、私訊推薦，發出去前貼進來掃一次。文字只在妳的瀏覽器裡檢查，不會上傳到任何地方。</p>
+
+  <div class="card">
+    <p class="formula"><b>自保公式：</b>描述「外觀與感受」，不承諾「治療與生理改變」。像皺紋、黑眼圈，「淡化」在部分化粧品類別通常可使用，仍依整句與產品核對；「消除」不行。</p>
+    <label for="txt" class="tip">要檢查的文字</label>
+    <textarea id="txt" placeholder="把要發的文字貼在這裡……&#10;例：換季痘痘冒不停？我們的醫美級果酸換膚，保證三天淡斑、促進膠原蛋白增生！"></textarea>
+    <fieldset class="scope">
+      <legend>這篇在寫什麼？</legend>
+      <label><input type="radio" name="scope" value="ps" checked> 兩個都有／不確定</label>
+      <label><input type="radio" name="scope" value="p"> 賣保養品、精油等產品</label>
+      <label><input type="radio" name="scope" value="s"> 宣傳店裡的服務</label>
+    </fieldset>
+    <div class="row">
+      <button type="button" class="primary" id="go">幫我檢查</button>
+      <button type="button" class="ghost" id="ex">放一段例子</button>
+      <span class="tip">這是發文前的自我檢查，不是法律意見；拿不準請問縣市衛生局。</span>
+    </div>
+    <ul class="legend">
+      <li>🔴 高風險：可能涉及醫療效能、醫療行為或生理改變，先改</li>
+      <li>🟠 誇大承諾：效果保證、拿不出證據的「證明」「第一」</li>
+      <li>🟡 看上下文：同一個字，接在不同地方意思不同</li>
+      <li>🟣 品牌自律：法律不一定管，但寫出來像在許願效果，建議換句話</li>
+      <li>賣產品看《化粧品標示宣傳廣告涉及虛偽誇大或醫療效能認定準則》；宣傳服務看醫療法第 84、87 條（非醫療機構不能做醫療廣告），同一個字在兩邊的判法可能不一樣</li>
+    </ul>
+  </div>
+
+  <div class="card" id="out" hidden aria-live="polite">
+    <div class="sum" id="sum"></div>
+    <div id="marked"></div>
+  </div>
+
+  <div class="card" id="tbl" hidden>
+    <table><thead><tr><th>字眼</th><th>燈號與出處</th><th>為什麼</th><th>改這樣寫</th></tr></thead><tbody id="rows"></tbody></table>
+    <p class="tip">燈號是檢查的先後順序，不是法律分類。有標「附件X-第N項」的，是對過準則附件原文的；沒標的，請自己對照準則附件或問縣市衛生局。</p>
+  </div>
+
+  <div class="card">
+    <b>衛生局最常抓的三類字眼</b>
+    <p class="tip">臺北市衛生局 2025 年查到化粧品違規廣告 167 件、罰 1,051 萬元；最常被點名：「促進細胞活動或膠原蛋白增生」46 件、「消炎、消腫」38 件、「生髮育毛」29 件（食藥署 2026 年轉載）。宣稱醫療效能罰 60 萬到 500 萬元，虛偽誇大罰 4 萬到 20 萬元（化粧品衛生安全管理法第 20 條）。會不會違規要看整體表現綜合判斷，單一個字出現不等於一定違規。</p>
+  </div>
+
+  <footer>美業 AI 技能包 v0.3.0｜內容出自《AI 時代，美業人的逆襲指南》開門做生意篇・一〈保命〉｜法規出處：<a href="https://law.moj.gov.tw/LawClass/LawAll.aspx?pcode=L0030099" target="_blank" rel="noopener">化粧品標示宣傳廣告涉及虛偽誇大或醫療效能認定準則（全國法規資料庫）</a>、新北市政府衛生局〈美容業者廣告怎麼刊不會吃罰單〉宣導單｜查核日 2026-09｜<a href="https://github.com/hourlight-skills/beauty-ai-skills/issues" target="_blank" rel="noopener">回報問題</a></footer>
+</div>
+<script>
+// 範圍：p＝賣產品（化粧品準則）　s＝宣傳服務（醫療法、衛生局範例）　ps＝兩邊都要注意
+const A1='化粧品準則附件一', A2='化粧品準則附件二', A4='化粧品準則附件四', NTPC='新北衛生局範例：不可刊載', NTPQ1='新北衛生局宣導單 Q1（醫師法第 28 條）', MED='醫療法第 84、87 條';
+// [字眼, 燈號 r／o／y／b, 範圍, 出處（沒核到原文就留空）, 為什麼, 改這樣寫]
+const RULES = [
+  // ── 醫療效能（化粧品）──
+  ['治療','r','ps','','講成醫療效能','幫助肌膚看起來清爽／修飾外觀'],['根治','r','ps','','講成醫療效能','幫助肌膚清爽、修飾粉刺外觀'],
+  ['療效','r','ps','','講成醫療效能','使用感受'],['治癒','r','ps','','講成醫療效能','（刪掉，改寫使用感受）'],
+  ['殺菌','r','p',A4+'-11','「殺菌」列在醫療效能','清潔、洗去髒污'],
+  ['抗菌','y','p',A2+'（有條件可用）','附件二有條件允許，看產品類別','清潔'],
+  ['換膚','r','ps',A4+'-1','醫療效能','（刪掉，改寫保養流程）'],['果酸換膚','r','ps',A4+'-1／'+NTPC,'醫療效能','（刪掉）'],['微晶煥膚','r','s',NTPC,'服務廣告不可刊載','（刪掉）'],
+  ['除疤','r','ps',A4+'-2～4／'+NTPC,'醫療效能','（刪掉）'],['去痘疤','r','p',A4+'-2～4','醫療效能','修飾痘痘留下的暗沉外觀'],['磨皮修疤','r','s',NTPC,'服務廣告不可刊載','（刪掉）'],
+  ['減少孕斑','r','p',A4+'-5','醫療效能','幫助提亮'],['減少褐斑','r','p',A4+'-5','醫療效能','幫助提亮'],
+  ['消除黑眼圈','r','p',A4+'-6','「消除」不行，附件二允許「淡化黑眼圈」','淡化黑眼圈'],['消除眼袋','r','p',A4+'-6','醫療效能','眼周看起來有精神'],
+  ['消除皺紋','r','p',A4+'-16','「消除」不行，附件二允許「淡化（撫平）皺紋」','淡化皺紋'],['消除細紋','r','p',A4+'-16','「消除」不行','淡化細紋'],
+  ['消除法令紋','r','p',A4+'-16','醫療效能','（刪掉，或寫淡化）'],['消除魚尾紋','r','p',A4+'-16','醫療效能','（刪掉，或寫淡化）'],['皺紋填補','r','p',A4+'-16','醫療效能','（刪掉）'],
+  ['消除橘皮','r','p',A4+'-7','醫療效能','（刪掉）'],['橘皮組織','y','p',A4+'-7／'+A1+'-28','講消除或減少就不行','（看整句）'],['消除狐臭','r','p',A4+'-8','醫療效能','清爽、氣味清新'],
+  ['抑炎','r','p',A4+'-10','醫療效能','舒緩'],['退紅腫','r','p',A4+'-10','醫療效能','舒緩、看起來平穩'],['消腫止痛','r','p',A4+'-10','醫療效能','（刪掉）'],
+  ['修復受損肌膚','r','p',A4+'-14','醫療效能（單獨寫「修復肌膚」附件二允許）','修護肌膚'],['修復受傷肌膚','r','p',A4+'-14','醫療效能','修護肌膚'],
+  ['治療肌膚鬆弛','r','p',A4+'-15','醫療效能','看起來更緊實'],['減輕肌膚鬆弛','r','p',A4+'-15','醫療效能','看起來更緊實'],
+  ['微針','r','ps',A4+'-17','醫療效能','（刪掉）'],['微晶瓷','r','ps',A4+'-17','醫療效能','（刪掉）'],['鑽石微雕','r','ps',A4+'-17','醫療效能','（刪掉）'],
+  ['光療','y','ps',A4+'-17','美甲的「光療甲」是凝膠甲可以寫；講皮膚治療不行','（講皮膚就刪掉）'],
+  ['促進毛髮生長','r','p',A4+'-18','醫療效能','幫助頭皮清爽、維持髮絲外觀'],['刺激毛髮生長','r','p',A4+'-18','醫療效能','幫助頭皮清爽'],
+  ['睫毛增多','r','p',A4+'-19','醫療效能（美睫店特別注意）','睫毛看起來濃密'],['毛髮增多','r','p',A4+'-19','醫療效能','髮絲看起來豐盈'],
+  ['藥用','r','p',A4+'-20','醫療效能','（刪掉）'],['藥水','r','p',A4+'-20','醫療效能','（刪掉）'],['藥劑','r','p',A4+'-20','醫療效能','（刪掉）'],['藥皂','r','p',A4+'-20','醫療效能','（刪掉）'],
+  ['除毛','y','ps',A4+'-13','化粧品宣稱除毛功效不行；店裡的除毛服務可以寫，雷射除毛是醫療','（看整句）'],['脫毛','y','ps',A4+'-13','同上','（看整句）'],
+  // ── 衛生局常抓 ──
+  ['消炎','r','ps','','臺北市 2025 年常被點名的前三類','幫助肌膚舒緩、清爽'],['消腫','r','ps','','臺北市 2025 年常被點名的前三類','按摩後感覺輕盈'],
+  ['消水腫','r','s',NTPC,'服務廣告不可刊載','按摩後感覺輕盈'],['抗發炎','r','s',NTPC,'服務廣告不可刊載','舒緩'],
+  ['淡斑','r','ps','','把外觀寫成皮膚生理改變','幫助提亮、修飾暗沉'],['去斑','r','ps','','把外觀寫成皮膚生理改變','幫助提亮、修飾暗沉'],['消除黑色素','r','ps','','把外觀寫成皮膚生理改變','幫助提亮、修飾暗沉'],
+  ['膠原蛋白增生','r','ps','','臺北市 2025 年被點名最多的一類','肌膚看起來飽滿有彈性'],['促進膠原蛋白','r','ps','','臺北市 2025 年被點名最多的一類','肌膚看起來飽滿有彈性'],
+  ['促進細胞','r','ps','','臺北市 2025 年被點名最多的一類','（刪掉，改寫外觀）'],['細胞再生','r','ps','','把外觀寫成細胞層級的改變','肌膚看起來透亮'],
+  ['生髮','r','ps','','臺北市 2025 年常被點名的前三類','幫助頭皮清爽、維持髮絲外觀'],['育毛','r','ps','','臺北市 2025 年常被點名的前三類','幫助頭皮清爽、維持髮絲外觀'],['治療落髮','r','ps','','講成醫療效能','幫助頭皮清爽'],
+  ['活化毛囊','r','p',A1+'-1／2／18','虛偽誇大（生理機能）','幫助頭皮清爽'],['刺激毛囊','r','p',A1+'-1／2／18','虛偽誇大（生理機能）','幫助頭皮清爽'],
+  ['預防落髮','r','p',A1+'-1／2／18','虛偽誇大（生理機能）','維持髮絲外觀'],['減少落髮','r','ps',A1+'／'+NTPC,'虛偽誇大；服務廣告也不可刊載','維持髮絲外觀'],['預防掉髮','r','p',A1+'-1／2／18','虛偽誇大（生理機能）','維持髮絲外觀'],
+  // ── 虛偽誇大（化粧品附件一）──
+  ['瘦身','r','p',A1,'附件一把「瘦身、減肥」列為涉及生理機能的詞句','按摩放鬆、修飾線條'],['減肥','r','p',A1,'附件一把「瘦身、減肥」列為涉及生理機能的詞句','按摩放鬆、修飾線條'],
+  ['減重','r','s',NTPC,'服務廣告不可刊載','窈窕曲線'],
+  ['去脂','r','p',A1+'-23','虛偽誇大（生理機能）','修飾線條'],['減脂','r','p',A1+'-23','虛偽誇大（生理機能）','修飾線條'],['消脂','r','ps',A1+'-23／'+NTPC,'虛偽誇大；服務廣告也不可刊載','修飾線條'],
+  ['燃燒脂肪','r','p',A1+'-23','虛偽誇大（生理機能）','修飾線條'],['燃脂','r','ps','','把外觀寫成脂肪代謝的改變','按摩放鬆、修飾線條'],['溶脂','r','ps',NTPC,'服務廣告不可刊載','按摩放鬆、修飾線條'],['軟化脂肪','r','s',NTPC,'服務廣告不可刊載','按摩放鬆'],
+  ['美體雕塑','y','p','','賣產品時要看整句；宣傳服務新北範例列為可刊載','（看整句）'],['塑身','r','p',A1+'-26／27','賣產品時不行；美容服務廣告新北範例列為可刊載','賣產品：修飾線條'],['纖體','r','p',A1+'-26／27','賣產品時不行；美容服務廣告新北範例列為可刊載','賣產品：修飾線條'],
+  ['雕塑曲線','r','p',A1+'-26／27','賣產品時不行；服務廣告可寫「美體雕塑」','賣產品：修飾線條'],['消除蝴蝶袖','r','p',A1+'-26／27','虛偽誇大（生理機能）','手臂線條看起來俐落'],['消除掰掰肉','r','p',A1+'-26／27','虛偽誇大（生理機能）','手臂線條看起來俐落'],
+  ['豐胸','r','p',A1+'-29','虛偽誇大（生理機能）','（服務可寫美胸手技、美化胸型）'],['隆乳','r','ps',A1+'-29／'+NTPQ1,'產品：虛偽誇大；服務：美容業不能做，屬醫療業務','（刪掉）'],['豐頰','r','s',NTPQ1,'美容業不能做，屬醫療業務','（刪掉）'],['雙眼皮','r','s',NTPQ1,'美容業不能做，屬醫療業務','（刪掉）'],['除肉芽','r','s',NTPQ1,'美容業不能做，屬醫療業務','（刪掉）'],['分解脂肪','r','s',NTPQ1,'美容業不能做，屬醫療業務','（刪掉）'],['除皺拉皮','r','s',NTPQ1,'美容業不能做，屬醫療業務','（刪掉）'],['換膚更皮','r','s',NTPQ1,'美容業不能做，屬醫療業務','（刪掉）'],
+  ['消除浮腫','r','p',A1+'-31','虛偽誇大（生理機能）','按摩後感覺輕盈'],
+  ['增強淋巴引流','r','p',A1+'-8','虛偽誇大（美容、芳療最常寫）','按摩放鬆、身體感覺輕盈'],['促進淋巴循環','r','s',NTPC,'服務廣告不可刊載','按摩放鬆'],['淋巴排毒','r','s',NTPC,'服務廣告不可刊載','按摩放鬆'],
+  ['不過敏','r','ps',A1+'-32','虛偽誇大','溫和配方（寫清楚成分）'],['零過敏','r','p',A1+'-32','虛偽誇大','溫和配方'],['抗過敏','r','ps',A1+'-32／'+NTPC,'虛偽誇大；服務廣告也不可刊載','溫和、舒緩'],
+  ['減過敏','r','p',A1+'-32','虛偽誇大','溫和、舒緩'],['舒緩過敏','r','p',A1+'-32','虛偽誇大','舒緩'],['修護過敏','r','p',A1+'-32','虛偽誇大','舒緩'],
+  ['醫藥級','r','ps',A1+'-33','虛偽誇大、暗示醫療','專業級保養'],['鎮靜劑','r','p',A1+'-34','虛偽誇大（芳療特別注意）','放鬆的香氣'],['鎮定劑','r','p',A1+'-34','虛偽誇大','放鬆的香氣'],
+  // ── 暗示醫療、醫療行為（服務廣告看醫療法）──
+  ['醫美級','r','ps','','讓人以為是醫療','深層保養、沙龍級體驗'],['藥用級','r','ps','','讓人以為是醫療','深層保養、沙龍級體驗'],['醫療級','r','ps','','讓人以為是醫療','專業級保養'],
+  ['雷射','r','ps',MED,'醫療行為：美容業不能做、也不能替診所打廣告','（刪掉）'],['雷射除毛','r','ps',MED+'／'+NTPC,'醫療行為','（刪掉）'],['雷射除斑','r','ps',MED+'／'+NTPC,'醫療行為','（刪掉）'],
+  ['電波','r','ps',MED,'醫療行為','（刪掉）'],['電波拉皮','r','ps',MED+'／'+NTPC,'醫療行為','（刪掉）'],['纖體電波','r','ps',NTPC,'服務廣告不可刊載','（刪掉）'],['脈衝光','r','ps',NTPC,'服務廣告不可刊載','（刪掉）'],
+  ['皮秒','r','ps',MED,'醫療行為','（刪掉）'],['注射','r','ps',MED,'醫療行為','（刪掉）'],['打針','r','ps',MED,'醫療行為','（刪掉）'],['美白針','r','ps',MED+'／'+NTPC,'醫療行為','（刪掉）'],
+  ['玻尿酸注射','r','ps',MED+'／'+NTPC,'醫療行為','（刪掉）'],['肉毒','r','ps',MED,'醫療行為','（刪掉）'],['肉毒桿菌注射','r','ps',MED+'／'+NTPC,'醫療行為','（刪掉）'],['麻醉','r','ps',MED,'醫療行為','（刪掉）'],['麻藥','r','ps',MED,'醫療行為','（刪掉）'],
+  ['除疣','r','s',NTPC,'服務廣告不可刊載','（刪掉）'],['不打針不吃藥','r','s',NTPC,'服務廣告不可刊載，暗示跟醫療比較','（刪掉）'],
+  ['醫美中心','r','s',NTPC,'店名招牌不能用類似醫療機構的名稱','（換店名）'],['健康中心','r','s',NTPC,'店名招牌不能用類似醫療機構的名稱','（換店名）'],['理療中心','r','s',NTPC,'店名招牌不能用類似醫療機構的名稱','（換店名）'],['醫學美容館','r','s',NTPC,'店名招牌不能用類似醫療機構的名稱','（換說法）'],
+  // ── 誇大承諾 ──
+  ['保證有效','o','ps','','效果因人而異，保證不了','（刪掉，改寫客人會感受到什麼）'],['保證','o','ps','','接在效果前面就是承諾','（刪掉，改寫客人會感受到什麼）'],
+  ['百分之百','o','ps','','拿不出證據就是誇大','（刪掉）'],['100%','o','ps','','拿不出證據就是誇大','（刪掉）'],
+  ['永久','o','ps','','誇大；預付契約也不能寫','（刪掉）'],['終身','o','ps','','誇大；預付契約也不能寫','（刪掉）'],
+  ['立即見效','o','ps','','時間加效果的承諾','（刪掉）'],['馬上見效','o','ps','','時間加效果的承諾','（刪掉）'],['最有效','o','ps','','拿不出證據就是誇大','（刪掉）'],
+  ['第一名','o','ps','','要拿得出證明','（刪掉，或附可查證出處）'],['無效退費','o','ps','','暗示一定有效','（刪掉）'],
+  ['科學證明','o','ps','','沒有拿得出來的證據，就可能被認定虛偽誇大','（刪掉，改寫成妳實際做了什麼、客人會經歷什麼步驟）'],
+  ['研究證實','o','ps','','沒有拿得出來的證據，就可能被認定虛偽誇大','（刪掉，改寫成妳實際做了什麼、客人會經歷什麼步驟）'],
+  ['臨床證實','o','ps','','沒有拿得出來的證據，就可能被認定虛偽誇大','（刪掉）'],
+  ['一定有效','o','ps','','效果因人而異','（刪掉，改寫客人會感受到什麼）'],['一定會','o','ps','品牌自律','把結果說死了，做不到會變客訴','（刪掉，只寫妳會做的步驟，例如「做完會跟妳說明居家保養」）'],
+  ['一定','y','ps','品牌自律','接在效果前面就是承諾','（看整句；講效果就刪掉）'],
+  ['療癒','b','ps','品牌自律','聽起來像在講治療效果','放鬆、舒服、被好好照顧'],
+  // ── 看上下文（附件二有些寫法是允許的）──
+  ['修復','y','ps',A2,'「修復肌膚」附件二允許；「修復受損／受傷肌膚」不行','修護、保養'],['美白','y','ps',A2,'「美白肌膚」附件二允許；講改變膚色生理、美白針就不行','提亮、看起來透亮'],
+  ['緊緻','y','ps',A2,'「緊緻毛孔」附件二允許；講成生理改變就不行','看起來更緊實有精神'],['抗老','y','ps','','講成生理改變就危險','保養、維持光澤'],
+  ['排毒','y','ps','','容易被看成生理改變','按摩放鬆'],['抗痘','y','ps',A2+'（洗臉類有條件）','講「治」「消」就變高風險','幫助肌膚清爽'],
+  ['痘痘','y','ps','','講「治」「消」就變高風險','修飾粉刺外觀'],['過敏','y','ps','','客人身體狀況要親自回','（私訊親自回）'],
+  ['療程','y','ps','','容易被看成醫療','課程、保養流程'],['醫師推薦','y','ps','','要拿得出證明','（刪掉，或附出處）'],['改善','y','ps','','接在疾病或症狀後面就危險','看起來更…'],
+];
+// 不是廣告用語、只是剛好含到關鍵字的詞；只用來避免誤報單字，不會遮住時間或保證的承諾（那兩種先抓）
+const EXCEPT=['保證金','保證書','保證人','一定要','光療指甲','光療甲','光療美甲','淡化皺紋','淡化細紋','淡化黑眼圈'];
+// 時間加效果：幾天／幾週／幾次就怎樣
+const DAYS = /[一二三四五六七八九十兩\d]+\s*(?:天|日|週|周|星期|個月|次)(?:內|之內|就|後)?\s*(?:見效|有感|看到效果|看見效果|淡斑|變白|變瘦|瘦|淡化|消除|改善|變小|緊實|回春|除皺|去斑)/g;
+// 保證加效果：保證／包你／絕對 後面接效果
+const PROMISE = /(?:保證|包你|包妳|絕對)\s*(?:見效|有效|有感|淡化|消除|改善|變白|變瘦|瘦|緊實|回春|除皺|去斑|淡斑|不過敏)/g;
+function check(t, scope){
+  const hits = [], taken = new Array(t.length).fill(false);
+  const mark=(i,len)=>{for(let k=i;k<i+len;k++)taken[k]=true;}, free=(i,len)=>!taken.slice(i,i+len).some(Boolean);
+  // ① 先抓承諾句型，例外清單不能把它們遮掉
+  for (const [re,why] of [[DAYS,'時間加效果的承諾'],[PROMISE,'保證加效果的承諾']]){ let m; re.lastIndex=0;
+    while((m=re.exec(t))){ if(!free(m.index,m[0].length)) continue; mark(m.index,m[0].length); hits.push({i:m.index,len:m[0].length,w:m[0],l:'o',src:'',why,fix:'（刪掉時間與保證，只寫妳實際會做的步驟）'}); } }
+  // ② 再套例外，最後比對字表（長詞優先）
+  for (const w of EXCEPT){ let i=-1; while((i=t.indexOf(w,i+1))>=0){ if(free(i,w.length)) mark(i,w.length); } }
+  const use = RULES.filter(r=>scope==='ps' || r[2].includes(scope)).sort((a,b)=>b[0].length-a[0].length);
+  for (const [w,l,sc,src,why,fix] of use){ let i=-1; while((i=t.indexOf(w,i+1))>=0){ if(!free(i,w.length)) continue; mark(i,w.length); hits.push({i,len:w.length,w,l,sc,src,why,fix}); } }
+  return hits.sort((a,b)=>a.i-b.i);
+}
+// 出處分「產品依據」（化粧品準則）與「服務依據」（醫療法、醫師法、衛生局範例），只列目前選的情境
+function basis(h, scope){
+  if(h.src==='品牌自律') return ['品牌自律（不是法律分類）'];
+  const parts=(h.src||'').split('／').filter(Boolean), prod=parts.filter(p=>p.startsWith('化粧品')), svc=parts.filter(p=>!p.startsWith('化粧品'));
+  const out=[], sc=h.sc||'ps', wantP=(scope!=='s')&&sc.includes('p'), wantS=(scope!=='p')&&sc.includes('s');
+  if(wantP) out.push('產品依據：'+(prod.join('、')||'請對照準則附件或問衛生局'));
+  if(wantS) out.push('服務依據：'+(svc.join('、')||'請對照醫療法第 84、87 條或問衛生局'));
+  return out.length?out:['請對照準則附件或問衛生局'];
+}
+const $=id=>document.getElementById(id);
+function node(tag,cls,text){const e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e;}
+function pill(cls,text){return node('span','pill '+cls,text);}
+// 使用者貼的文字一律用 textContent 放進畫面，不經過 innerHTML
+function run(){
+  const t = $('txt').value, scope = document.querySelector('input[name=scope]:checked').value;
+  const sum=$('sum'), marked=$('marked'), rows=$('rows'); sum.textContent=''; marked.textContent=''; rows.textContent='';
+  if(!t.trim()){ sum.appendChild(pill('pn','先把要檢查的文字貼進上面的框框')); marked.hidden=true;
+    $('out').hidden=false; $('tbl').hidden=true; $('txt').focus(); return; }
+  marked.hidden=false;
+  const hits = check(t, scope);
+  let p=0; for(const h of hits){ marked.appendChild(document.createTextNode(t.slice(p,h.i))); marked.appendChild(node('mark',h.l,t.slice(h.i,h.i+h.len))); p=h.i+h.len; }
+  marked.appendChild(document.createTextNode(t.slice(p)));
+  const n = l => hits.filter(h=>h.l===l).length;
+  if(hits.length){ sum.append(pill('pr',`🔴 ${n('r')} 處`),pill('po',`🟠 ${n('o')} 處`),pill('py',`🟡 ${n('y')} 處`),pill('pb',`🟣 ${n('b')} 處`)); }
+  else sum.appendChild(pill('pn','本詞庫沒有抓到，不代表一定合法，整句意思還是要自己看'));
+  const lv = {r:'🔴 高風險',o:'🟠 誇大承諾',y:'🟡 看上下文',b:'🟣 品牌自律'};
+  for(const h of hits){ const tr=node('tr');
+    const c1=node('td');c1.dataset.l='字眼';c1.appendChild(node('b','',h.w));
+    const c2=node('td','',lv[h.l]);c2.dataset.l='燈號與出處';basis(h,scope).forEach(s=>c2.appendChild(node('span','src',s)));
+    const c3=node('td','',h.why);c3.dataset.l='為什麼';
+    const c4=node('td','',h.fix);c4.dataset.l='改這樣寫';
+    tr.append(c1,c2,c3,c4); rows.appendChild(tr); }
+  $('out').hidden=false; $('tbl').hidden=!hits.length;
+}
+$('go').onclick=run;
+document.querySelectorAll('input[name=scope]').forEach(r=>r.onchange=()=>{ if($('txt').value.trim()) run(); });
+$('ex').onclick=()=>{$('txt').value='換季痘痘冒不停？我們的醫美級果酸換膚，保證三天見效，淡斑又促進膠原蛋白增生！再加增強淋巴引流、全面殺菌，終身保固，不滿意無效退費。';run();};
+</script>
+</body>
+</html>

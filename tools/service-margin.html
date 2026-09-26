@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>服務時薪與折扣底線｜美業 AI 技能包</title>
+<style>
+:root{--bg:#F0EEE9;--card:#fff;--ink:#3D3835;--mute:#6E675F;--rose:#7D4351;--teal:#007B7F;--orange:#E88A2C;--pink:#FFCCCC;--line:#DDD6CE}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.7}
+.wrap{max-width:980px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:1.6rem;margin:0 0 4px;color:var(--rose)}
+h2{font-size:1.05rem;margin:0 0 10px;color:var(--teal)}
+.sub{color:var(--mute);margin:0 0 16px}
+.card{background:var(--card);border-radius:18px;padding:20px;box-shadow:0 2px 10px rgba(125,67,81,.08);margin-bottom:18px}
+.note{color:var(--mute);font-size:.88rem}
+.svc{border:2px solid var(--line);border-radius:14px;padding:12px;margin-bottom:12px}
+.svc .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px}
+@media (min-width:760px){.svc .grid{grid-template-columns:2fr 1fr 1fr 1fr 1fr}}
+label{display:block;font-size:.85rem;font-weight:700}
+input{display:block;width:100%;margin-top:2px;font:inherit;font-weight:400;padding:6px 8px;border:2px solid var(--line);border-radius:10px;background:#FFFCFA}
+input:focus{outline:none;border-color:var(--teal)}
+input.err{border-color:#C0392B;background:#FDE2E0}
+.res{margin-top:8px;font-size:.95rem}
+.bad{color:#C0392B;font-weight:700}.ok{color:var(--teal);font-weight:700}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px}
+button{font:inherit;font-weight:700;border:0;border-radius:999px;padding:10px 20px;cursor:pointer}
+.primary{background:var(--rose);color:#fff}
+.ghost{background:#fff;color:var(--teal);border:2px solid var(--teal)}
+.small{padding:4px 12px;font-size:.8rem}
+.settings{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px}
+ol.rank{padding-left:22px;margin:6px 0}
+ol.rank li{margin-bottom:6px}
+details{margin-top:6px}summary{cursor:pointer;color:var(--teal);font-size:.88rem}
+.calc{white-space:pre-line;background:#FFF7EF;border-left:5px solid var(--orange);border-radius:8px;padding:8px 12px;font-size:.88rem;margin-top:6px}
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+footer{color:var(--mute);font-size:.8rem;margin-top:24px}
+footer a{color:var(--teal)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>服務時薪與折扣底線</h1>
+  <p class="sub">打平線算的是一個月要幾位客人；這裡算的是<b>每一種服務，做一小時到底賺多少</b>。有些服務看起來價格高，但做很久、耗材貴，換成時薪反而最少。數字只在妳的瀏覽器裡算，不會上傳。</p>
+
+  <div class="card">
+    <h2>① 每一種服務</h2>
+    <p class="note">「做一次要幾分鐘」請把準備、清潔、收拾都算進去。手續費填百分比（例：刷卡 2.5）。沒有的填 0，空著不算。</p>
+    <div id="list"></div>
+    <div class="row"><button type="button" class="ghost" id="add">＋ 再加一種服務</button><button type="button" class="ghost" id="ex">放兩個例子</button></div>
+  </div>
+
+  <div class="card">
+    <h2>② 想打折的話</h2>
+    <div class="settings">
+      <label>想打幾折（例：8 就是八折，9.5 是九五折；不打折填 10）<input type="number" id="off" value="10" min="1" max="10" step="0.5" inputmode="decimal"></label>
+      <label>我的時薪底線（每小時至少要賺多少，元）<input type="number" id="floor" placeholder="例：600" min="0" inputmode="decimal"></label>
+    </div>
+    <p class="note">底線是妳自己定的數字，例如把房租、自己的薪水攤到每個工作小時。不知道怎麼定，可以先用打平線計算機算一個月的固定成本，再除以一個月能做的小時數。</p>
+  </div>
+
+  <div class="card">
+    <h2>③ 結果：每小時毛利排名</h2>
+    <div id="out"><p class="note">填好上面至少一種服務就會出現。</p></div>
+    <p class="note">這裡只算「價格－耗材－手續費」的毛利，沒有扣房租、薪水這些固定成本，也不是稅務或報稅的結論。</p>
+  </div>
+
+  <footer>美業 AI 技能包 v0.3.0｜內容出自《AI 時代，美業人的逆襲指南》開門做生意篇・三〈開店算帳〉｜<a href="https://github.com/hourlight-skills/beauty-ai-skills/issues" target="_blank" rel="noopener">回報問題</a></footer>
+</div>
+<script>
+(function(){
+var $=function(id){return document.getElementById(id);};
+function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;}
+var fmt=function(n){return n.toLocaleString('zh-TW',{maximumFractionDigits:2});}, cents=function(v){return Math.round(v*100)/100;};
+var FIELDS=[['name','服務名稱','例：凝膠單色','text'],['price','價格（元）','例：1200','number'],['supply','耗材（元）','例：150','number'],['fee','手續費 %','例：2.5','number'],['min','做一次要幾分鐘','例：90','number']];
+var svcs=[], seq=0;
+function addRow(v){var s={id:++seq,inputs:{}};var box=el('div','svc');
+  var g=el('div','grid');FIELDS.forEach(function(f){var lb=el('label','',f[1]);var i=el('input');i.type=f[3];i.placeholder=f[2];if(f[3]==='number'){i.min='0';i.inputMode='decimal';}
+    if(v&&v[f[0]]!=null)i.value=v[f[0]];i.oninput=calc;lb.appendChild(i);g.appendChild(lb);s.inputs[f[0]]=i;});
+  box.appendChild(g);var rm=el('button','ghost small','刪掉這一種');rm.type='button';rm.onclick=function(){svcs=svcs.filter(function(x){return x!==s;});box.remove();calc();};
+  s.res=el('div','res');box.appendChild(s.res);box.appendChild(rm);s.box=box;$('list').appendChild(box);svcs.push(s);calc();}
+function num(inp,label,probs,opt){var t=inp.value.trim();inp.classList.remove('err');
+  if(t===''){if(opt)return null;probs.push(label+'請填（沒有就填 0）');inp.classList.add('err');return NaN;}
+  var v=Number(t);if(!Number.isFinite(v)||v<0||v>1e8){probs.push(label+'要是 0 以上的正常數字');inp.classList.add('err');return NaN;}return v;}
+// 單次毛利＝價格－耗材－價格×手續費%；每小時毛利＝單次毛利 ÷（分鐘÷60）
+function one(price,supply,fee,min){var f=cents(price*fee/100),m=cents(price-supply-f),h=cents(m/(min/60));return {f:f,m:m,h:h};}
+function calc(){
+  var off=Number($('off').value), floorT=$('floor').value.trim(), floor=floorT===''?null:Number(floorT), good=[], gprob=[];
+  $('off').classList.remove('err');$('floor').classList.remove('err');
+  if(!(off>0&&off<=10)){gprob.push('折數要在 0 到 10 之間（例：8 是八折）');$('off').classList.add('err');}
+  if(floor!=null&&!(Number.isFinite(floor)&&floor>=0)){gprob.push('底線要是 0 以上的數字');$('floor').classList.add('err');floor=null;}
+  svcs.forEach(function(s,k){var P=[],I=s.inputs,name=I.name.value.trim()||('第 '+(k+1)+' 種服務');
+    var price=num(I.price,'價格',P),supply=num(I.supply,'耗材',P),fee=num(I.fee,'手續費',P),min=num(I.min,'分鐘數',P);
+    if(Number.isFinite(fee)&&fee>=100){P.push('手續費 % 要小於 100');I.fee.classList.add('err');}
+    if(min===0){P.push('分鐘數不能是 0（做一次總要花時間）');I.min.classList.add('err');}
+    s.res.textContent='';
+    if(P.length){s.res.appendChild(el('span','bad','先改這幾格：'+P.join('、')));return;}
+    var a=one(price,supply,fee,min);
+    s.res.appendChild(el('span',a.m<0?'bad':'ok',a.m<0?'做一次就虧 '+fmt(-a.m)+' 元（耗材加手續費比價格還高）':'每小時毛利 '+fmt(a.h)+' 元'));
+    var det=el('details');det.appendChild(el('summary','','看算式'));
+    det.appendChild(el('div','calc','手續費 = '+fmt(price)+' × '+fmt(fee)+'% = '+fmt(a.f)+'\n單次毛利 = '+fmt(price)+' − '+fmt(supply)+' − '+fmt(a.f)+' = '+fmt(a.m)+'\n每小時毛利 = '+fmt(a.m)+' ÷ ('+fmt(min)+' ÷ 60) = '+fmt(a.h)));
+    s.res.appendChild(det);
+    good.push({name:name,price:price,supply:supply,fee:fee,min:min,a:a,d:gprob.length?null:one(cents(price*off/10),supply,fee,min)});});
+  var out=$('out');out.textContent='';
+  if(gprob.length)out.appendChild(el('p','bad','折扣或底線：'+gprob.join('、')));
+  if(!good.length){out.appendChild(el('p','note','填好上面至少一種服務就會出現。'));return;}
+  good.sort(function(x,y){return y.a.h-x.a.h;});
+  var ol=el('ol','rank');good.forEach(function(g){var li=el('li');
+    li.appendChild(el('b','',g.name+'：'));li.appendChild(document.createTextNode('原價每小時 '+fmt(g.a.h)+' 元'));
+    if(g.d&&off<10){li.appendChild(document.createTextNode('；打 '+fmt(off)+' 折後（'+fmt(cents(g.price*off/10))+' 元）每小時 '+fmt(g.d.h)+' 元'));}
+    var check=g.d&&off<10?g.d:g.a;
+    if(check.m<0)li.appendChild(el('span','bad','　做一次就虧錢'));
+    else if(floor!=null&&check.h<floor)li.appendChild(el('span','bad','　低於妳的底線 '+fmt(floor)+' 元（差 '+fmt(cents(floor-check.h))+' 元）'));
+    else if(floor!=null)li.appendChild(el('span','ok','　有到底線'));
+    if(g.d&&off<10){var det=el('details');det.appendChild(el('summary','','看折後算式'));
+      det.appendChild(el('div','calc','折後價格 = '+fmt(g.price)+' × '+fmt(off)+' ÷ 10 = '+fmt(cents(g.price*off/10))+'\n手續費 = '+fmt(cents(g.price*off/10))+' × '+fmt(g.fee)+'% = '+fmt(g.d.f)+'\n單次毛利 = '+fmt(cents(g.price*off/10))+' − '+fmt(g.supply)+' − '+fmt(g.d.f)+' = '+fmt(g.d.m)+'\n每小時毛利 = '+fmt(g.d.m)+' ÷ ('+fmt(g.min)+' ÷ 60) = '+fmt(g.d.h)));li.appendChild(det);}
+    ol.appendChild(li);});
+  out.appendChild(ol);
+}
+$('add').onclick=function(){addRow();};
+$('ex').onclick=function(){addRow({name:'凝膠單色（例子）',price:1200,supply:150,fee:2.5,min:90});addRow({name:'手足保養（例子）',price:1500,supply:300,fee:2.5,min:150});};
+$('off').oninput=calc;$('floor').oninput=calc;
+addRow();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LINE 常見問答產生器｜美業 AI 技能包</title>
+<style>
+:root{--bg:#F0EEE9;--card:#fff;--ink:#3D3835;--mute:#6E675F;--rose:#7D4351;--teal:#007B7F;--orange:#E88A2C;--pink:#FFCCCC;--line:#DDD6CE}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.7}
+.wrap{max-width:980px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:1.6rem;margin:0 0 4px;color:var(--rose)}
+h2{font-size:1.05rem;margin:0 0 10px;color:var(--teal)}
+.sub{color:var(--mute);margin:0 0 16px}
+.card{background:var(--card);border-radius:18px;padding:20px;box-shadow:0 2px 10px rgba(125,67,81,.08);margin-bottom:18px}
+.note{color:var(--mute);font-size:.88rem}
+.grid{display:grid;grid-template-columns:1fr;gap:8px 14px}
+@media (min-width:760px){.grid{grid-template-columns:1fr 1fr}}
+label{display:block;font-size:.85rem;font-weight:700}
+input,textarea{display:block;width:100%;margin-top:2px;font:inherit;font-weight:400;padding:8px 10px;border:2px solid var(--line);border-radius:10px;background:#FFFCFA;font-size:16px}
+textarea{min-height:90px;resize:vertical}
+input:focus,textarea:focus{outline:none;border-color:var(--teal)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px}
+button{font:inherit;font-weight:700;border:0;border-radius:999px;padding:10px 20px;cursor:pointer;min-height:44px}
+.primary{background:var(--rose);color:#fff}
+.ghost{background:#fff;color:var(--teal);border:2px solid var(--teal)}
+.small{padding:4px 12px;font-size:.8rem;min-height:36px}
+.qa{border:2px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:10px}
+.qa .q{font-weight:700;color:var(--rose)}
+.qa .a{white-space:pre-wrap;word-break:break-word}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+footer{color:var(--mute);font-size:.8rem;margin-top:24px}
+footer a{color:var(--teal)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>LINE 常見問答產生器</h1>
+  <p class="sub">客人最常問的就那幾題：在哪、幾點開、怎麼預約、多少錢、可以刷卡嗎、要取消怎麼辦。填一次店裡的資料，這裡幫妳生成一問一答，可以貼進 LINE 官方帳號的自動回應或關鍵字回覆。<b>只用妳填的內容，沒填的欄位不會生成那一題</b>，不會替妳編答案或加規則。資料只在妳的瀏覽器裡。</p>
+  <p id="store" class="note" style="color:#C0392B;font-weight:700" hidden>這個瀏覽器不讓網頁存資料（常見原因：無痕模式）。現在可以照常用，但關掉就會不見，生成後記得先複製。</p>
+
+  <div class="card">
+    <h2>① 店裡的資料</h2>
+    <div class="grid">
+      <label>店名<input id="name" maxlength="40" placeholder="例：小美美甲工作室"></label>
+      <label>地址<input id="addr" maxlength="80" placeholder="例：台北市○○區○○路 1 號 2 樓"></label>
+      <label>營業時間<input id="hours" maxlength="60" placeholder="例：週二至週日 11:00–20:00"></label>
+      <label>公休日<input id="off" maxlength="40" placeholder="例：每週一公休"></label>
+      <label>怎麼預約<input id="book" maxlength="80" placeholder="例：LINE 直接留言想要的日期時段"></label>
+      <label>付款方式<input id="pay" maxlength="60" placeholder="例：現金、轉帳、LINE Pay"></label>
+      <label>交通、停車<input id="park" maxlength="80" placeholder="例：捷運○○站 2 號出口走路 3 分鐘"></label>
+      <label>取消、改期規則<input id="cancel" maxlength="100" placeholder="例：請在前一天告知，當天取消會影響下次預約"></label>
+    </div>
+    <label style="margin-top:8px">價目（一行一項，格式：服務名稱 價格）<textarea id="price" placeholder="凝膠單色 1200&#10;手部保養 800"></textarea></label>
+    <label style="margin-top:8px">其他想加的問答（一行一題，格式：問題｜回答，選填）<textarea id="extra" placeholder="可以帶小朋友嗎｜可以，但工作區有工具，請大人陪同喔"></textarea></label>
+    <div class="row"><button type="button" class="primary" id="go">生成問答</button><button type="button" class="ghost" id="ex">放一組例子</button><button type="button" class="ghost" id="clr">清空</button><span id="msg" class="note"></span></div>
+  </div>
+
+  <div class="card" id="res" hidden>
+    <h2>② 生成的問答</h2>
+    <p class="note">每一題可以單獨複製，貼進 LINE 官方帳號後台的「自動回應訊息」。價格若有變動，記得回來改。</p>
+    <div id="list"></div>
+    <div class="row"><button type="button" class="ghost" id="all">全部複製</button><span id="msg2" class="note"></span></div>
+  </div>
+
+  <footer>美業 AI 技能包 v0.3.0｜通用小工具｜<a href="index.html">回工具首頁</a>｜<a href="https://github.com/hourlight-skills/beauty-ai-skills/issues" target="_blank" rel="noopener">回報問題</a></footer>
+</div>
+<script>
+(function(){
+var KEY='hl-line-faq-v1', IDS=['name','addr','hours','off','book','pay','park','cancel','price','extra'];
+var $=function(id){return document.getElementById(id);};
+function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;}
+function v(id){return $(id).value.trim();}
+function save(){var ok=true;try{var o={};IDS.forEach(function(i){o[i]=$(i).value;});localStorage.setItem(KEY,JSON.stringify(o));}catch(e){ok=false;}$('store').hidden=ok;}
+function load(){try{var o=JSON.parse(localStorage.getItem(KEY)||'null');if(o)IDS.forEach(function(i){if(o[i]!=null)$(i).value=o[i];});}catch(e){}}
+var qas=[];
+function copy(t,msg){(navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(t):Promise.reject()).then(function(){$(msg).textContent='已複製。';},function(){prompt('複製下面這段：',t);});}
+function gen(){save();var n=v('name')||'我們',s=n==='我們'?'我們':n;qas=[];
+  if(v('addr')||v('park'))qas.push(['請問在哪裡？怎麼去？',(v('addr')?s+'在 '+v('addr')+'。':'')+(v('park')?(v('addr')?'\n':'')+'交通：'+v('park')+'。':'')]);
+  if(v('hours')||v('off'))qas.push(['營業時間是幾點？',(v('hours')?'營業時間：'+v('hours')+'。':'')+(v('off')?(v('hours')?'\n':'')+'公休：'+v('off')+'。':'')]);
+  if(v('book'))qas.push(['要怎麼預約？','預約方式：'+v('book')+'。']);   // 只放店家自己填的，不替店家加規則
+  if(v('price')){var lines=v('price').split(/\n+/).map(function(l){var m=l.trim().match(/^(.+?)\s+((?:NT\$)?[0-9０-９][0-9０-９,，]*)\s*元?$/);return m?m[1].trim()+'：'+m[2]+' 元':l.trim();}).filter(Boolean);
+    qas.push(['價格是多少？',s+'的價目：\n'+lines.join('\n')]);}
+  if(v('pay'))qas.push(['可以用什麼付款？','付款方式：'+v('pay')+'。']);
+  if(v('cancel'))qas.push(['要取消或改期怎麼辦？',v('cancel')+'。']);
+  v('extra').split(/\n+/).forEach(function(l){var p=l.split(/[｜|]/);if(p.length>=2&&p[0].trim()&&p.slice(1).join('｜').trim())qas.push([p[0].trim(),p.slice(1).join('｜').trim()]);});
+  qas.forEach(function(x){x[1]=x[1].replace(/([。！？!?.])。/g,'$1');});   // 店家自己打了句號就不再補一個
+  var list=$('list');list.textContent='';$('res').hidden=false;
+  if(!qas.length){list.appendChild(el('p','note','上面至少填一欄，才生得出問答。'));return;}
+  qas.forEach(function(x){var b=el('div','qa');b.appendChild(el('div','q','Q：'+x[0]));b.appendChild(el('div','a',x[1]));var c=el('button','ghost small','複製這一題');c.type='button';c.onclick=function(){copy('Q：'+x[0]+'\nA：'+x[1],'msg2');};b.appendChild(c);list.appendChild(b);});}
+$('go').onclick=gen;
+$('all').onclick=function(){copy(qas.map(function(x){return 'Q：'+x[0]+'\nA：'+x[1];}).join('\n\n'),'msg2');};
+$('ex').onclick=function(){$('name').value='小美美甲工作室（例子）';$('addr').value='台北市○○區○○路 1 號 2 樓';$('hours').value='週二至週日 11:00–20:00';$('off').value='每週一公休';$('book').value='LINE 直接留言想要的日期時段';$('pay').value='現金、轉帳';$('park').value='捷運○○站 2 號出口走路 3 分鐘';$('cancel').value='請在前一天告知，當天取消會影響下次預約';$('price').value='凝膠單色 1200\n手部保養 800';$('extra').value='可以帶小朋友嗎｜可以，但工作區有工具，請大人陪同喔';gen();};
+$('clr').onclick=function(){if(!confirm('清空所有欄位？'))return;IDS.forEach(function(i){$(i).value='';});save();$('res').hidden=true;};
+IDS.forEach(function(i){$(i).oninput=save;});
+load();
+})();
+</script>
+</body>
+</html>

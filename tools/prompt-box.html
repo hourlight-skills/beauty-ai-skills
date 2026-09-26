@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>提示詞收藏盒｜美業 AI 技能包</title>
+<style>
+:root{--bg:#F0EEE9;--card:#fff;--ink:#3D3835;--mute:#6E675F;--rose:#7D4351;--teal:#007B7F;--orange:#E88A2C;--pink:#FFCCCC;--line:#DDD6CE}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.7}
+.wrap{max-width:980px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:1.6rem;margin:0 0 4px;color:var(--rose)}
+h2{font-size:1.05rem;margin:0 0 10px;color:var(--teal)}
+.sub{color:var(--mute);margin:0 0 16px}
+.card{background:var(--card);border-radius:18px;padding:20px;box-shadow:0 2px 10px rgba(125,67,81,.08);margin-bottom:18px}
+.note{color:var(--mute);font-size:.88rem}
+label{display:block;font-size:.85rem;font-weight:700;margin-top:8px}
+input,textarea,select{display:block;width:100%;margin-top:2px;font:inherit;font-weight:400;padding:8px 10px;border:2px solid var(--line);border-radius:10px;background:#FFFCFA;font-size:16px}
+textarea{min-height:120px;resize:vertical}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--teal)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px}
+button{font:inherit;font-weight:700;border:0;border-radius:999px;padding:10px 20px;cursor:pointer;min-height:44px}
+.primary{background:var(--rose);color:#fff}
+.ghost{background:#fff;color:var(--teal);border:2px solid var(--teal)}
+.small{padding:4px 12px;font-size:.8rem;min-height:36px}
+.item{border:2px solid var(--line);border-radius:14px;padding:12px;margin-bottom:12px}
+.item h3{margin:0;font-size:1rem}
+.tag{display:inline-block;font-size:.75rem;font-weight:700;color:#fff;background:var(--teal);border-radius:999px;padding:1px 10px;margin-left:6px}
+.body{white-space:pre-wrap;word-break:break-word;font-size:.92rem;background:#FFF7EF;border-left:5px solid var(--orange);border-radius:8px;padding:8px 12px;margin:8px 0;max-height:180px;overflow:auto}
+.filters{display:grid;grid-template-columns:2fr 1fr;gap:10px}
+.ok{color:var(--teal);font-weight:700}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+footer{color:var(--mute);font-size:.8rem;margin-top:24px}
+footer a{color:var(--teal)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>提示詞收藏盒</h1>
+  <p class="sub">好用的 AI 指令不要每次重打：存進來、分好類，下次找到一鍵複製，貼到 ChatGPT、Claude 或 Gemini 就好。<b>只存在這台電腦的這個瀏覽器</b>，不會上傳。</p>
+
+  <div class="card">
+    <h2 id="formTitle">＋ 存一條新的</h2>
+    <label>名稱<input id="title" maxlength="60" placeholder="例：週末活動貼文"></label>
+    <label>分類<input id="cat" list="cats" maxlength="20" placeholder="例：貼文、回客人、記帳"><datalist id="cats"></datalist></label>
+    <label>指令內容<textarea id="body" placeholder="把好用的指令整段貼在這裡。要替換的地方可以用【】標起來，例如【服務名稱】。"></textarea></label>
+    <div class="row"><button type="button" class="primary" id="saveBtn">存起來</button><button type="button" class="ghost" id="cancel" style="display:none">取消編輯</button><span id="formMsg" class="note"></span></div>
+  </div>
+
+  <div class="card">
+    <h2>我的收藏</h2>
+    <div class="filters"><label>搜尋<input id="q" placeholder="打關鍵字"></label><label>分類<select id="fcat"><option value="">全部</option></select></label></div>
+    <div id="list" style="margin-top:12px"></div>
+  </div>
+
+  <div class="card">
+    <h2>備份</h2>
+    <p class="note">換電腦或清除瀏覽器資料前，先複製備份碼存起來；到新電腦貼回來就好。</p>
+    <div class="row"><button type="button" class="ghost" id="exp">複製備份碼</button><button type="button" class="ghost" id="imp">貼上備份碼還原</button><button type="button" class="ghost" id="ex">放幾個例子</button><span id="msg" class="note"></span></div>
+  </div>
+
+  <footer>美業 AI 技能包 v0.3.0｜通用小工具｜<a href="index.html">回工具首頁</a>｜<a href="https://github.com/hourlight-skills/beauty-ai-skills/issues" target="_blank" rel="noopener">回報問題</a></footer>
+</div>
+<script>
+(function(){
+var KEY='hl-prompt-box-v1';
+var $=function(id){return document.getElementById(id);};
+function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;}
+var items=[], editing=null;
+function load(){try{var a=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(a)?a:[];}catch(e){return [];}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(items));}catch(e){$('msg').textContent='這個瀏覽器不能存（可能是無痕模式），關掉就會不見。';}}
+function copy(t,btn){var done=function(){var o=btn.textContent;btn.textContent='已複製 ✓';setTimeout(function(){btn.textContent=o;},1500);};
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(done,function(){prompt('複製下面這段：',t);});else prompt('複製下面這段：',t);}
+function render(){
+  var cats=[];items.forEach(function(i){if(i.cat&&cats.indexOf(i.cat)<0)cats.push(i.cat);});cats.sort();
+  var dl=$('cats');dl.textContent='';cats.forEach(function(c){var o=el('option');o.value=c;dl.appendChild(o);});
+  var fc=$('fcat'),cur=fc.value;fc.textContent='';fc.appendChild(el('option','','全部')).value='';cats.forEach(function(c){var o=el('option','',c);o.value=c;fc.appendChild(o);});fc.value=cats.indexOf(cur)>=0?cur:'';
+  var q=$('q').value.trim().toLowerCase(),f=fc.value,list=$('list');list.textContent='';
+  var shown=items.filter(function(i){return(!f||i.cat===f)&&(!q||(i.title+' '+i.cat+' '+i.body).toLowerCase().indexOf(q)>=0);});
+  if(!items.length){list.appendChild(el('p','note','還沒有收藏。上面存一條，或按「放幾個例子」看看長什麼樣子。'));return;}
+  if(!shown.length){list.appendChild(el('p','note','找不到符合的。'));return;}
+  shown.forEach(function(i){var box=el('div','item');var h=el('h3','',i.title);if(i.cat)h.appendChild(el('span','tag',i.cat));box.appendChild(h);
+    box.appendChild(el('div','body',i.body));var row=el('div','row');
+    var c=el('button','primary small','一鍵複製');c.type='button';c.onclick=function(){copy(i.body,c);};
+    var e=el('button','ghost small','編輯');e.type='button';e.onclick=function(){editing=i.id;$('title').value=i.title;$('cat').value=i.cat;$('body').value=i.body;$('formTitle').textContent='✎ 編輯這一條';$('saveBtn').textContent='存修改';$('cancel').style.display='';$('title').focus();};
+    var d=el('button','ghost small','刪除');d.type='button';d.onclick=function(){if(confirm('確定刪掉「'+i.title+'」？')){items=items.filter(function(x){return x.id!==i.id;});save();render();}};
+    row.appendChild(c);row.appendChild(e);row.appendChild(d);box.appendChild(row);list.appendChild(box);});
+}
+function reset(){editing=null;$('title').value='';$('cat').value='';$('body').value='';$('formTitle').textContent='＋ 存一條新的';$('saveBtn').textContent='存起來';$('cancel').style.display='none';}
+$('saveBtn').onclick=function(){var t=$('title').value.trim(),b=$('body').value.trim(),c=$('cat').value.trim();
+  if(!b){$('formMsg').textContent='指令內容是空的。';return;}
+  if(!t)t=b.slice(0,20)+(b.length>20?'…':'');
+  if(editing){items.forEach(function(i){if(i.id===editing){i.title=t;i.cat=c;i.body=b;}});$('formMsg').textContent='已存修改。';}
+  else{items.unshift({id:Date.now()+'-'+Math.random().toString(36).slice(2,7),title:t,cat:c,body:b});$('formMsg').textContent='已存。';}
+  save();reset();render();};
+$('cancel').onclick=function(){reset();$('formMsg').textContent='';};
+$('q').oninput=render;$('fcat').onchange=render;
+$('ex').onclick=function(){var ex=[
+  {title:'週末活動貼文（例子）',cat:'貼文',body:'你是我的店的社群小編。幫我寫一則 IG 貼文，介紹【活動內容】，時間是【日期】，對象是【客群】。語氣親切、不誇大，最後一句邀請大家私訊預約。不要用「治療」「保證」這類字。'},
+  {title:'回覆客人詢價（例子）',cat:'回客人',body:'客人傳訊息問【服務名稱】多少錢、要做多久。請幫我寫一段回覆：先謝謝她詢問，說明價格【價格】、時間約【分鐘】分鐘，再問她方便的時段。語氣溫和、簡短。'},
+  {title:'把收據整理成表（例子）',cat:'記帳',body:'我會貼上這個月的收支，請整理成表格：日期、項目、收入或支出、金額、分類。最後算出總收入、總支出和差額。看不清楚的金額請標出來問我，不要自己猜。'}];
+  ex.forEach(function(x,k){items.unshift({id:Date.now()+'-'+k,title:x.title,cat:x.cat,body:x.body});});save();render();};
+$('exp').onclick=function(){var t=JSON.stringify(items);(navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(t):Promise.reject()).then(function(){$('msg').textContent='已複製 '+items.length+' 條，貼到記事本存起來。';},function(){prompt('複製下面這段存起來：',t);});};
+$('imp').onclick=function(){var t=prompt('把備份碼貼在這裡：');if(!t)return;try{var a=JSON.parse(t);if(!Array.isArray(a))throw 0;
+    var ok=a.filter(function(x){return x&&typeof x.body==='string';}).map(function(x,k){return{id:String(x.id||Date.now()+'-'+k),title:String(x.title||'').slice(0,60),cat:String(x.cat||'').slice(0,20),body:String(x.body)};});
+    items=ok.concat(items.filter(function(i){return !ok.some(function(o){return o.id===i.id;});}));save();render();$('msg').textContent='已還原 '+ok.length+' 條。';}catch(e){$('msg').textContent='這段不是正確的備份碼。';}};
+items=load();render();
+})();
+</script>
+</body>
+</html>
