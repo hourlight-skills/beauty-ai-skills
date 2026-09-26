@@ -40,8 +40,12 @@
 
 ## 一鍵網頁與十二個小工具（不用裝、不用登入）
 
-怎麼打開：在這個頁面按綠色「Code」→「Download ZIP」，解壓縮後雙擊 `tools` 資料夾裡的 `index.html`。
-（直接在 GitHub 上點下面的檔名，只會看到原始碼，不會開出工具。網址直接能用的版本上線後會寫在這裡。）
+**直接點開就能用（手機、電腦都可以）：**
+- 全部小工具：https://hourlight-skills.github.io/beauty-ai-skills/tools/
+- 一鍵指令產生器：https://hourlight-skills.github.io/beauty-ai-skills/tools/one-click.html
+
+想存在自己電腦、沒網路也能用：在這個頁面按綠色「Code」→「Download ZIP」，解壓縮後雙擊 `tools` 資料夾裡的 `index.html`。
+（直接在 GitHub 上點下面的檔名，只會看到原始碼，不會開出工具；請用上面的網址。）
 
 | 工具 | 做什麼 |
 |---|---|
