@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>30 天發文排程＋撞題檢查｜AI 小工具</title>
+<style>
+:root{--bg:#F0EEE9;--card:#fff;--ink:#3D3835;--mute:#6A6560;--rose:#7D4351;--teal:#007B7F;--orange:#E88A2C;--line:#DDD6CE;--ok:#1E7A4C;--bad:#B3261E}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.7}
+.wrap{max-width:900px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:1.6rem;margin:0 0 4px;color:var(--rose)}
+.sub{color:var(--mute);margin:0 0 18px}
+.card{background:var(--card);border-radius:18px;padding:20px;box-shadow:0 2px 10px rgba(125,67,81,.08);margin-bottom:18px}
+h2{font-size:1.05rem;margin:0 0 10px;color:var(--teal)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media (max-width:720px){.grid{grid-template-columns:1fr}}
+label.f{display:block;font-weight:700;margin:12px 0 4px}
+textarea,input[type=date]{width:100%;font:inherit;padding:10px 12px;border:2px solid var(--line);border-radius:12px;background:#FFFCFA}
+textarea{min-height:170px;resize:vertical}
+textarea:focus,input:focus{outline:none;border-color:var(--teal)}
+.days{display:flex;flex-wrap:wrap;gap:6px}
+.days label{display:flex;align-items:center;gap:4px;border:2px solid var(--line);border-radius:999px;padding:2px 12px;cursor:pointer}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.btn{font:inherit;font-weight:700;border:0;border-radius:999px;padding:10px 20px;cursor:pointer;background:var(--rose);color:#fff}
+.btn.ghost{background:#fff;color:var(--rose);border:2px solid var(--rose)}
+ul.res{list-style:none;padding:0;margin:0}
+ul.res li{padding:8px 10px;border-radius:10px;margin:6px 0;background:#FFF7EF;border-left:5px solid var(--orange)}
+ul.res li.ok{background:#F7F4F0;border-left-color:var(--ok)}
+table{width:100%;border-collapse:collapse;font-size:.95rem}
+th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--teal);font-size:.85rem}
+td.d{white-space:nowrap;color:var(--mute)}
+td.empty{color:var(--bad)}
+.msg{font-weight:700;min-height:1.7em;color:var(--ok)}
+.note{color:var(--mute);font-size:.85rem;margin-top:10px}
+button:focus-visible,textarea:focus-visible,input:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+footer{color:var(--mute);font-size:.8rem;margin-top:24px}
+.store-warn{display:none;background:#FDECEA;border-left:5px solid var(--bad);color:var(--bad);font-weight:700;border-radius:10px;padding:10px 14px;margin:0 0 18px}
+.store-warn.on{display:block}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>30 天發文排程＋撞題檢查</h1>
+  <p class="store-warn" id="storeWarn" role="alert">這個瀏覽器現在存不了資料（可能是無痕模式或被設定擋掉）：關掉這一頁就會不見，離開前請先下載或複製。</p>
+  <p class="sub">把想寫的題目排進接下來 30 天，順便抓出「這個月已經寫過、換個說法又寫一次」的題目。資料只存在妳這台的瀏覽器，不會上傳。</p>
+
+  <div class="grid">
+    <div class="card">
+      <h2>① 什麼時候發？</h2>
+      <label class="f" for="start">從哪一天開始</label>
+      <input type="date" id="start">
+      <label class="f">每週哪幾天發</label>
+      <div class="days" id="days"></div>
+    </div>
+    <div class="card">
+      <h2>② 最近已經發過的題目</h2>
+      <label class="f" for="past">一行一題（可以不填）</label>
+      <textarea id="past" placeholder="例：&#10;換季保濕三個習慣&#10;第一次做臉要注意什麼"></textarea>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>③ 這個月想寫的題目</h2>
+    <label class="f" for="todo">一行一題，照妳想發的順序排</label>
+    <textarea id="todo" placeholder="例：&#10;冬天手很乾怎麼保養&#10;做完臉可以化妝嗎&#10;預約取消怎麼算"></textarea>
+    <div class="btns">
+      <button class="btn" type="button" id="go">排進行事曆</button>
+      <button class="btn ghost" type="button" id="csv">下載成試算表（CSV）</button>
+      <button class="btn ghost" type="button" id="copy">複製成文字</button>
+    </div>
+    <div class="msg" id="msg"></div>
+  </div>
+
+  <div class="card">
+    <h2>撞題提醒</h2>
+    <ul class="res" id="dup"><li class="ok">排完就會檢查。</li></ul>
+    <p class="note">用「兩個字兩個字」比對相似度，換句話說很像的會被抓出來；最後還是妳自己判斷是不是同一題。</p>
+  </div>
+
+  <div class="card">
+    <h2>排程表</h2>
+    <div style="overflow-x:auto"><table><thead><tr><th>日期</th><th>星期</th><th>題目</th></tr></thead><tbody id="tb"><tr><td colspan="3">按「排進行事曆」就會出現。</td></tr></tbody></table></div>
+  </div>
+
+  <footer>題目與設定只存在這台瀏覽器（localStorage），清掉瀏覽器資料就會不見；要留存請下載試算表。<br><span style="display:block;margin-top:8px">美業 AI 技能包 v0.4.0｜通用小工具｜<a href="index.html">回工具首頁</a>｜<a href="https://github.com/hourlight-skills/beauty-ai-skills/issues" target="_blank" rel="noopener">回報問題</a></span></footer>
+</div>
+<script>
+(function(){
+  var WD = ['日','一','二','三','四','五','六'];
+  var KEY = 'posting-calendar-v1';
+  function warnStore(){ var w = document.getElementById('storeWarn'); if (w) w.classList.add('on'); }
+  try { localStorage.setItem('__probe', '1'); localStorage.removeItem('__probe'); } catch(e) { warnStore(); }
+  var daysBox = document.getElementById('days');
+  WD.forEach(function(w, i){
+    var l = document.createElement('label'); var c = document.createElement('input');
+    c.type='checkbox'; c.value=i; c.checked = (i===1||i===3||i===5);
+    l.appendChild(c); l.appendChild(document.createTextNode('週' + w)); daysBox.appendChild(l);
+  });
+  var start = document.getElementById('start'), past = document.getElementById('past'), todo = document.getElementById('todo');
+  function iso(d){ return d.getFullYear() + '-' + ('0'+(d.getMonth()+1)).slice(-2) + '-' + ('0'+d.getDate()).slice(-2); }
+  start.value = iso(new Date());
+  try {
+    var saved = JSON.parse(localStorage.getItem(KEY) || 'null');
+    if (saved) { past.value = saved.past || ''; todo.value = saved.todo || '';
+      if (saved.days) [].forEach.call(daysBox.querySelectorAll('input'), function(c){ c.checked = saved.days.indexOf(+c.value) > -1; }); }
+  } catch(e) { warnStore(); }
+
+  function norm(s){ return s.replace(/[\s\p{P}\p{S}]/gu, '').toLowerCase(); }
+  function bigrams(s){ s = norm(s); var a = []; for (var i=0;i<s.length-1;i++) a.push(s.slice(i,i+2)); return a.length ? a : (s ? [s] : []); }
+  function sim(a, b){
+    var A = bigrams(a), B = bigrams(b); if (!A.length || !B.length) return 0;
+    var setB = {}; B.forEach(function(x){ setB[x] = (setB[x]||0) + 1; });
+    var inter = 0; A.forEach(function(x){ if (setB[x]) { inter++; setB[x]--; } });
+    return 2 * inter / (A.length + B.length);
+  }
+  function lines(t){ return t.split(/\r?\n/).map(function(x){ return x.trim(); }).filter(Boolean); }
+
+  var rows = [];
+  function run(){
+    var msg = document.getElementById('msg');
+    rows = [];   // 先清掉上一次的結果：下面提早離開時，下載／複製就不會拿到舊的
+    document.getElementById('tb').textContent = ''; document.getElementById('dup').textContent = '';   // 畫面上的舊表格與撞題提示也一起清，免得以為是現在設定排的
+    var chosen = [].filter.call(daysBox.querySelectorAll('input'), function(c){ return c.checked; }).map(function(c){ return +c.value; });
+    var list = lines(todo.value), old = lines(past.value);
+    try { localStorage.setItem(KEY, JSON.stringify({ past: past.value, todo: todo.value, days: chosen })); } catch(e) { warnStore(); }
+    if (!start.value) { msg.style.color='var(--bad)'; msg.textContent='先選開始日期。'; return; }
+    if (!chosen.length) { msg.style.color='var(--bad)'; msg.textContent='每週至少選一天。'; return; }
+
+    var p = start.value.split('-'); var d0 = new Date(+p[0], +p[1]-1, +p[2]);
+    rows = [];
+    for (var i=0; i<30; i++) {
+      var d = new Date(d0.getFullYear(), d0.getMonth(), d0.getDate() + i);
+      if (chosen.indexOf(d.getDay()) > -1) rows.push({ date: iso(d), wd: WD[d.getDay()], topic: '' });
+    }
+    rows.forEach(function(r, i){ r.topic = list[i] || ''; });
+
+    var tb = document.getElementById('tb'); tb.textContent = '';
+    rows.forEach(function(r){
+      var tr = document.createElement('tr');
+      [r.date, '週' + r.wd, r.topic || '（還沒有題目）'].forEach(function(v, j){
+        var td = document.createElement('td'); td.textContent = v;
+        if (j===0) td.className='d'; if (j===2 && !r.topic) td.className='empty';
+        tr.appendChild(td);
+      });
+      tb.appendChild(tr);
+    });
+
+    var dup = document.getElementById('dup'); dup.textContent = '';
+    var found = 0, TH = 0.5;
+    function warn(t){ var li = document.createElement('li'); li.textContent = t; dup.appendChild(li); found++; }
+    for (var a=0; a<list.length; a++) {
+      for (var b=a+1; b<list.length; b++) { var s = sim(list[a], list[b]); if (s >= TH) warn('「' + list[a] + '」和「' + list[b] + '」很像（相似度 ' + Math.round(s*100) + '%），這個月要不要只留一個？'); }
+      old.forEach(function(o){ var s = sim(list[a], o); if (s >= TH) warn('「' + list[a] + '」跟之前發過的「' + o + '」很像（相似度 ' + Math.round(s*100) + '%）。'); });
+    }
+    if (!found) { var li = document.createElement('li'); li.className='ok'; li.textContent = list.length ? '沒有看到很像的題目。' : '還沒有題目可以比。'; dup.appendChild(li); }
+
+    var slots = rows.length, extra = list.length - slots;
+    msg.style.color='var(--ok)';
+    msg.textContent = '30 天內有 ' + slots + ' 個發文日，妳寫了 ' + list.length + ' 題' + (extra > 0 ? '，多出的 ' + extra + ' 題排不進來。' : (extra < 0 ? '，還差 ' + (-extra) + ' 題。' : '，剛好排滿。'));
+  }
+  document.getElementById('go').addEventListener('click', run);
+
+  function safeCell(v){ v = String(v == null ? '' : v); return /^[=+\-@\t\r\n]/.test(v) ? "'" + v : v; }
+  function asText(sep){
+    return ['日期','星期','題目'].join(sep) + '\n' + rows.map(function(r){
+      return [r.date, '週' + r.wd, r.topic].map(function(v){ v = safeCell(v); return sep===',' ? '"' + v.replace(/"/g,'""') + '"' : v.replace(/[\t\r\n]+/g, ' '); }).join(sep);
+    }).join('\n');
+  }
+  document.getElementById('csv').addEventListener('click', function(){
+    run(); if (!rows.length) return;
+    var blob = new Blob(['﻿' + asText(',')], { type: 'text/csv;charset=utf-8' });
+    var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = '發文排程_' + start.value + '.csv';
+    document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  });
+  document.getElementById('copy').addEventListener('click', function(){
+    run(); if (!rows.length) return;
+    var t = asText('\t'), msg = document.getElementById('msg');
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(function(){ msg.textContent='已複製，可以直接貼進試算表。'; }, function(){ msg.textContent='瀏覽器不讓複製，請改用下載。'; });
+    else msg.textContent='瀏覽器不讓複製，請改用下載。';
+  });
+})();
+</script>
+</body>
+</html>

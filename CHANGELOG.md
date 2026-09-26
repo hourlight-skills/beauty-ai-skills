@@ -1,5 +1,15 @@
 # 更新紀錄
 
+## 0.4.0｜2026-09-26
+
+**新增：五個通用小工具（社群與影片）**
+- `tools/post-checker.html` 貼文發出前體檢：各平台字數（脆的表情符號依位元組算）、連結數與追蹤碼、主題標籤、要再確認的字眼、第一行
+- `tools/one-post-five-platforms.html` 一篇變五個平台：產生給 AI 的改寫指令（脆、IG、臉書、YouTube 說明欄、Podcast 描述），改好貼回來量字數
+- `tools/posting-calendar.html` 30 天發文排程＋撞題檢查：下載與複製前一律照畫面重排；試算表匯出會擋公式開頭
+- `tools/chapter-timestamps.html` 影片／Podcast 章節時間碼：檢查 YouTube 章節規則；沒填片長時明講最後一章無法驗證
+- `tools/utm-link-builder.html` 追蹤連結產生器：保留原網址參數、統一小寫、下載 CSV（擋公式開頭）
+- 平台數字都附官方來源（查核日 2026-09-26）；Podcast 描述：Apple 建單集說明寫最多 10,000 字，訂閱內容建議寫 4,000 字，兩個都列出來
+
 ## 0.3.0｜2026-09-26
 
 **新增：五個通用小工具（不只美業）**

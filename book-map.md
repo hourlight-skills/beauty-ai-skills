@@ -45,5 +45,5 @@
 | 附錄一 | 美業常用 AI 提問範本庫 | ✅ 各技能裡的提示詞；🔜 整理成 `references/` |
 | 附錄二 | 精油安全速查表 | 🔜 同第 22–25 章 |
 | 附錄三 | 參考文獻 | ✅ 各技能底下的「參考」 |
-| 書外補充 | 通用小工具（不只美業） | `ai-usage-hub.html`（AI 訂閱與花費）、`prompt-box.html`（提示詞收藏盒）、`ai-answer-checklist.html`（AI 回答查核清單）、`transcript-to-todo.html`（逐字稿轉待辦）、`line-faq-maker.html`（LINE 常見問答）：任何小店都用得到，不對應單一章節 |
+| 書外補充 | 通用小工具（不只美業） | `ai-usage-hub.html`（AI 訂閱與花費）、`prompt-box.html`（提示詞收藏盒）、`ai-answer-checklist.html`（AI 回答查核清單）、`transcript-to-todo.html`（逐字稿轉待辦）、`line-faq-maker.html`（LINE 常見問答）、`post-checker.html`（貼文體檢）、`one-post-five-platforms.html`（一篇變五平台）、`posting-calendar.html`（30 天發文排程）、`chapter-timestamps.html`（章節時間碼）、`utm-link-builder.html`（追蹤連結）：任何小店都用得到，不對應單一章節 |
 | 書外補充 | 紋繡 | ✅ `cosmetic-tattoo-consent`：依衛福部〈刺青紋身紋眉等消費行為之注意事項〉與地方衛生局宣導單整理 |

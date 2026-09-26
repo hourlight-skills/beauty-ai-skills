@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>一篇變五個平台｜AI 小工具</title>
+<style>
+:root{--bg:#F0EEE9;--card:#fff;--ink:#3D3835;--mute:#6A6560;--rose:#7D4351;--teal:#007B7F;--orange:#E88A2C;--line:#DDD6CE;--ok:#1E7A4C;--bad:#B3261E}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.7}
+.wrap{max-width:900px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:1.6rem;margin:0 0 4px;color:var(--rose)}
+.sub{color:var(--mute);margin:0 0 18px}
+.card{background:var(--card);border-radius:18px;padding:20px;box-shadow:0 2px 10px rgba(125,67,81,.08);margin-bottom:18px}
+h2{font-size:1.05rem;margin:0 0 10px;color:var(--teal)}
+label.f{display:block;font-weight:700;margin:12px 0 4px}
+textarea,input[type=text]{width:100%;font:inherit;padding:10px 12px;border:2px solid var(--line);border-radius:12px;background:#FFFCFA}
+textarea{min-height:140px;resize:vertical}
+textarea:focus,input:focus{outline:none;border-color:var(--teal)}
+.checks{display:flex;flex-wrap:wrap;gap:8px 16px;margin:6px 0}
+.checks label{display:flex;gap:6px;align-items:center}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.btn{font:inherit;font-weight:700;border:0;border-radius:999px;padding:10px 20px;cursor:pointer;background:var(--rose);color:#fff;text-decoration:none;display:inline-block}
+.btn.ghost{background:#fff;color:var(--rose);border:2px solid var(--rose)}
+pre{white-space:pre-wrap;word-break:break-word;background:#F7F4F0;border-radius:12px;padding:14px;font:inherit;font-size:.92rem;max-height:320px;overflow:auto;margin:10px 0 0}
+.msg{color:var(--ok);font-weight:700;min-height:1.7em}
+.pl{border-top:1px dashed var(--line);padding-top:12px;margin-top:12px}
+.pl h3{margin:0 0 4px;font-size:1rem;color:var(--rose)}
+.cnt{font-size:.9rem;color:var(--mute)}
+.cnt.over{color:var(--bad);font-weight:700}
+.note{color:var(--mute);font-size:.85rem;margin-top:10px}
+button:focus-visible,a:focus-visible,textarea:focus-visible,input:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+footer{color:var(--mute);font-size:.8rem;margin-top:24px}
+footer a{color:var(--teal);word-break:break-all}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>一篇變五個平台</h1>
+  <p class="sub">寫一次，交給 AI 改成脆、IG、臉書、YouTube 說明欄、Podcast 單集說明五種版本。這頁只幫妳把指令寫好、把改完的字數量好；文字不會上傳，要妳自己貼到 AI。</p>
+
+  <div class="card">
+    <h2>① 填原文</h2>
+    <label class="f" for="src">原本的文章或想法（隨便寫、口語也可以）</label>
+    <textarea id="src" placeholder="例：這週好多客人問換季皮膚很乾怎麼辦，我整理了三個在家就能做的小習慣…"></textarea>
+    <label class="f" for="who">寫給誰看？</label>
+    <input type="text" id="who" placeholder="例：25–40 歲、第一次來店的上班族">
+    <label class="f" for="act">看完希望對方做什麼？</label>
+    <input type="text" id="act" placeholder="例：私訊預約／點連結看價目表／留言問問題">
+    <label class="f" for="url">要放的連結（可以不填）</label>
+    <input type="text" id="url" placeholder="https://…">
+    <label class="f">要哪幾個版本？</label>
+    <div class="checks" id="plats"></div>
+    <div class="btns"><button class="btn" type="button" id="make">產生 AI 指令</button></div>
+  </div>
+
+  <div class="card">
+    <h2>② 複製指令，貼到 AI</h2>
+    <div class="msg" id="msg"></div>
+    <div class="btns">
+      <button class="btn" type="button" id="copy">複製指令</button>
+      <a class="btn ghost" href="https://chatgpt.com/" target="_blank" rel="noopener">開 ChatGPT</a>
+      <a class="btn ghost" href="https://claude.ai/new" target="_blank" rel="noopener">開 Claude</a>
+      <a class="btn ghost" href="https://gemini.google.com/app" target="_blank" rel="noopener">開 Gemini</a>
+    </div>
+    <pre id="out">先在上面填原文，再按「產生 AI 指令」。</pre>
+    <p class="note">裡面如果有客人的名字、電話、生日，貼給 AI 之前先刪掉或換成「某位客人」。</p>
+  </div>
+
+  <div class="card">
+    <h2>③ 把 AI 改好的貼回來量字數</h2>
+    <p class="note" style="margin-top:0">AI 常常算不準字數，發出去之前在這裡量一次。</p>
+    <div id="checkers"></div>
+  </div>
+
+  <footer>
+    平台上限（2026-09-26 查核）：Threads 每篇 500 字、表情符號依 UTF-8 位元組計、每篇一個主題標籤（<a href="https://developers.facebook.com/docs/threads/posts" target="_blank" rel="noopener">Meta Threads 開發文件</a>、<a href="https://help.instagram.com/1356090605000312" target="_blank" rel="noopener">Instagram 說明中心</a>）；IG 說明文字 2,200 字、主題標籤 30 個（<a href="https://developers.facebook.com/docs/instagram-platform/instagram-graph-api/reference/ig-user/media" target="_blank" rel="noopener">Meta Instagram 開發文件</a>）；YouTube 說明欄 5,000 位元組、不能有「&lt;」「&gt;」（<a href="https://developers.google.com/youtube/v3/docs/videos" target="_blank" rel="noopener">YouTube Data API</a>）；Apple Podcasts：在 Podcasts Connect 建立單集時說明最多 10,000 字（<a href="https://podcasters.apple.com/support/825-how-to-create-an-episode" target="_blank" rel="noopener">Apple｜Create an episode</a>）；另一頁寫單集與節目說明「可以到 4,000 字」（<a href="https://podcasters.apple.com/support/1236-subscription-best-practices" target="_blank" rel="noopener">Apple｜Subscriptions best practices</a>），所以這裡超過 4,000 只提醒、超過 10,000 才算超過上限；用其他託管平台請以該平台為準。臉書貼文沒有列入字數檢查，建議重點放在前三行。
+  <br><span style="display:block;margin-top:8px">美業 AI 技能包 v0.4.0｜通用小工具｜<a href="index.html">回工具首頁</a>｜<a href="https://github.com/hourlight-skills/beauty-ai-skills/issues" target="_blank" rel="noopener">回報問題</a></span></footer>
+</div>
+<script>
+(function(){
+  var PL = [
+    { k:'threads', name:'Threads（脆）', max:500, mode:'threads', unit:'字', rule:'500 字以內（表情符號一個算好幾字，最多用 1–2 個），第一行 30 字內要能讓人停下來，口語、像在跟朋友講話，最後一句丟一個問題讓人留言；主題標籤最多 1 個。' },
+    { k:'ig', name:'Instagram', max:2200, mode:'chars', unit:'字', rule:'2,200 字以內，第一行就是重點（「更多」之前只露一兩行），分段用空行，可以條列；最後放 3–8 個主題標籤。' },
+    { k:'fb', name:'臉書', max:0, mode:'chars', unit:'字', rule:'前三行講完重點與對讀者的好處，後面可以說明細節；語氣比脆完整一點；連結放在文末。' },
+    { k:'yt', name:'YouTube 說明欄', max:5000, mode:'bytes', unit:'位元組', rule:'第一段兩句話說這支影片解決什麼問題；接著列重點；不要用「<」「>」兩個符號；連結放在第一段之後。' },
+    { k:'pod', name:'Podcast 單集說明', max:10000, soft:4000, mode:'chars', unit:'字', rule:'4,000 字以內（Apple 建單集最多 10,000 字，但建議 4,000 字內較保險），開頭一句話講這集聽完會得到什麼，再列本集重點 3–5 點；不要寫時間碼以外的格式符號。' }
+  ];
+  var enc = new TextEncoder(), EMOJI = /\p{Extended_Pictographic}/u;
+  function gs(s){ return (window.Intl && Intl.Segmenter) ? Array.from(new Intl.Segmenter('zh-Hant',{granularity:'grapheme'}).segment(s), function(x){return x.segment;}) : Array.from(s); }
+  function measure(s, m){
+    if (m==='bytes') return enc.encode(s).length;
+    if (m==='threads') return gs(s).reduce(function(n,g){ return n + (EMOJI.test(g) ? enc.encode(g).length : 1); }, 0);
+    return gs(s).length;
+  }
+  var plats = document.getElementById('plats'), checkers = document.getElementById('checkers');
+  PL.forEach(function(p){
+    var l = document.createElement('label'); var c = document.createElement('input');
+    c.type='checkbox'; c.checked = true; c.value = p.k; l.appendChild(c); l.appendChild(document.createTextNode(p.name)); plats.appendChild(l);
+
+    var box = document.createElement('div'); box.className='pl';
+    var h = document.createElement('h3'); h.textContent = p.name; box.appendChild(h);
+    var t = document.createElement('textarea'); t.style.minHeight='90px'; t.setAttribute('aria-label', p.name + '的版本'); box.appendChild(t);
+    var n = document.createElement('div'); n.className='cnt'; box.appendChild(n);
+    function upd(){
+      var v = measure(t.value, p.mode);
+      if (!p.max) { n.className='cnt'; n.textContent = v + ' 字（臉書不檢查上限）'; return; }
+      var over = v > p.max; n.className = over ? 'cnt over' : 'cnt';
+      n.textContent = v.toLocaleString('zh-TW') + '／' + p.max.toLocaleString('zh-TW') + ' ' + p.unit + (over ? '　超過 ' + (v - p.max).toLocaleString('zh-TW') + '，發不出去或會被截掉' : (p.soft && v > p.soft ? '　超過 ' + p.soft.toLocaleString('zh-TW') + '，建議縮短（見頁尾）' : ''));
+      if (p.k==='yt' && /[<>]/.test(t.value)) n.textContent += '　有「<」或「>」，YouTube 不接受';
+    }
+    t.addEventListener('input', upd); upd(); checkers.appendChild(box);
+  });
+
+  var prompt = '';
+  document.getElementById('make').addEventListener('click', function(){
+    var src = document.getElementById('src').value.trim();
+    var msg = document.getElementById('msg');
+    if (!src) { msg.style.color='var(--bad)'; msg.textContent = '先在「原文」那格寫點東西。'; return; }
+    var who = document.getElementById('who').value.trim() || '一般讀者';
+    var act = document.getElementById('act').value.trim() || '留言或私訊問問題';
+    var url = document.getElementById('url').value.trim();
+    var chosen = PL.filter(function(p){ return [].some.call(plats.querySelectorAll('input:checked'), function(c){ return c.value===p.k; }); });
+    if (!chosen.length) { msg.style.color='var(--bad)'; msg.textContent = '至少勾一個平台。'; return; }
+    var lines = [
+      '你是熟悉台灣社群平台的文案編輯。請把下面的原文改寫成 ' + chosen.length + ' 個版本，每個版本用「## 平台名稱」當標題分開，不要加任何說明。',
+      '',
+      '讀者：' + who,
+      '希望讀者看完：' + act,
+      url ? '要放的連結：' + url : '不放連結。',
+      '',
+      '共同規則：',
+      '- 繁體中文、台灣用語，稱呼讀者用「妳」或「你」保持一致。',
+      '- 只用原文裡有的事實，不要自己加數字、效果或承諾；不要寫「保證」「一定」「治療」「根治」「100%」這類字。',
+      '- 每個版本都要能單獨看懂，不要寫「上一篇提到」。',
+      '',
+      '各平台規則：'
+    ];
+    chosen.forEach(function(p){ lines.push('- ' + p.name + '：' + p.rule); });
+    lines.push('', '原文：', '"""', src, '"""');
+    prompt = lines.join('\n');
+    document.getElementById('out').textContent = prompt;
+    msg.style.color='var(--ok)'; msg.textContent = '指令好了，按「複製指令」再開一個 AI 貼上。';
+  });
+  document.getElementById('copy').addEventListener('click', function(){
+    var msg = document.getElementById('msg');
+    if (!prompt) { msg.style.color='var(--bad)'; msg.textContent = '先按「產生 AI 指令」。'; return; }
+    function done(){ msg.style.color='var(--ok)'; msg.textContent = '已複製，去 AI 那邊貼上就好。'; }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(prompt).then(done, fallback); else fallback();
+    function fallback(){ var t=document.createElement('textarea'); t.value=prompt; document.body.appendChild(t); t.select(); try{ document.execCommand('copy'); done(); }catch(e){ msg.textContent='瀏覽器不讓複製，請手動全選下面的文字。'; } document.body.removeChild(t); }
+  });
+})();
+</script>
+</body>
+</html>

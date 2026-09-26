@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>貼文發出前體檢｜AI 小工具</title>
+<style>
+:root{--bg:#F0EEE9;--card:#fff;--ink:#3D3835;--mute:#6A6560;--rose:#7D4351;--teal:#007B7F;--orange:#E88A2C;--line:#DDD6CE;--ok:#1E7A4C;--bad:#B3261E;--warn:#8A5A00}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.7}
+.wrap{max-width:900px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:1.6rem;margin:0 0 4px;color:var(--rose)}
+.sub{color:var(--mute);margin:0 0 18px}
+.card{background:var(--card);border-radius:18px;padding:20px;box-shadow:0 2px 10px rgba(125,67,81,.08);margin-bottom:18px}
+h2{font-size:1.05rem;margin:0 0 10px;color:var(--teal)}
+textarea{width:100%;min-height:220px;font:inherit;padding:12px;border:2px solid var(--line);border-radius:12px;background:#FFFCFA;resize:vertical}
+textarea:focus{outline:none;border-color:var(--teal)}
+.tabs{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.tabs button{font:inherit;font-weight:700;border:2px solid var(--rose);background:#fff;color:var(--rose);border-radius:999px;padding:6px 14px;cursor:pointer}
+.tabs button.on{background:var(--rose);color:#fff}
+.meter{height:10px;background:#EEE8E1;border-radius:99px;overflow:hidden;margin:6px 0 2px}
+.meter i{display:block;height:100%;background:var(--teal);width:0}
+.meter i.over{background:var(--bad)}
+.count{font-size:1.4rem;font-weight:900;color:var(--rose)}
+ul.res{list-style:none;padding:0;margin:0}
+ul.res li{padding:8px 10px;border-radius:10px;margin:6px 0;background:#F7F4F0}
+ul.res li.ok{border-left:5px solid var(--ok)}
+ul.res li.bad{border-left:5px solid var(--bad);background:#FDECEA}
+ul.res li.warn{border-left:5px solid var(--orange);background:#FFF7EF}
+ul.res b{margin-right:6px}
+.note{color:var(--mute);font-size:.85rem;margin-top:10px}
+button:focus-visible,textarea:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+footer{color:var(--mute);font-size:.8rem;margin-top:24px}
+footer a{color:var(--teal);word-break:break-all}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>貼文發出前體檢</h1>
+  <p class="sub">把寫好的貼文貼進來，一次看字數、連結、有沒有容易出事的字眼、開頭抓不抓人。文字只在妳的瀏覽器裡檢查，不會上傳。</p>
+
+  <div class="card">
+    <h2>要發在哪裡？</h2>
+    <div class="tabs" id="tabs"></div>
+    <textarea id="txt" placeholder="把貼文貼在這裡…"></textarea>
+    <div class="meter"><i id="bar"></i></div>
+    <div><span class="count" id="cnt">0</span> <span id="lim"></span></div>
+  </div>
+
+  <div class="card">
+    <h2>體檢結果</h2>
+    <ul class="res" id="res"><li>貼上貼文就會開始檢查。</li></ul>
+    <p class="note">「容易出事的字眼」只是提醒，不是法律判斷。賣化妝品、食品、醫療相關服務的，廣告用字請以主管機關公告為準。</p>
+  </div>
+
+  <footer>
+    平台上限（2026-09-26 查核）：Threads 每篇 500 字、表情符號依 UTF-8 位元組計、連結最多 5 個、主題標籤 1–50 字且不能有「.」「&amp;」（<a href="https://developers.facebook.com/docs/threads/posts" target="_blank" rel="noopener">Meta Threads 開發文件</a>）；每篇只能標一個主題（<a href="https://help.instagram.com/1356090605000312" target="_blank" rel="noopener">Instagram 說明中心</a>）。IG 說明文字 2,200 字、主題標籤 30 個、@ 標註 20 個（<a href="https://developers.facebook.com/docs/instagram-platform/instagram-graph-api/reference/ig-user/media" target="_blank" rel="noopener">Meta Instagram 開發文件</a>）。YouTube 說明欄 5,000 位元組、不能有「&lt;」「&gt;」（<a href="https://developers.google.com/youtube/v3/docs/videos" target="_blank" rel="noopener">YouTube Data API</a>）。Apple Podcasts：在 Podcasts Connect 建立單集時說明最多 10,000 字（<a href="https://podcasters.apple.com/support/825-how-to-create-an-episode" target="_blank" rel="noopener">Apple｜Create an episode</a>）；另一頁寫單集與節目說明「可以到 4,000 字」（<a href="https://podcasters.apple.com/support/1236-subscription-best-practices" target="_blank" rel="noopener">Apple｜Subscriptions best practices</a>），所以這裡超過 4,000 只提醒、超過 10,000 才算超過上限；用其他託管平台請以該平台為準。平台規則會改，發現不一樣請以官方為準。
+  <br><span style="display:block;margin-top:8px">美業 AI 技能包 v0.4.0｜通用小工具｜<a href="index.html">回工具首頁</a>｜<a href="https://github.com/hourlight-skills/beauty-ai-skills/issues" target="_blank" rel="noopener">回報問題</a></span></footer>
+</div>
+<script>
+(function(){
+  var P = {
+    threads: { name:'Threads（脆）', max:500, unit:'字', mode:'threads', links:5 },
+    ig:      { name:'Instagram', max:2200, unit:'字', mode:'chars', tags:30, at:20 },
+    yt:      { name:'YouTube 說明欄', max:5000, unit:'位元組', mode:'bytes', noAngle:true },
+    pod:     { name:'Podcast 單集說明', max:10000, soft:4000, unit:'字', mode:'chars' }
+  };
+  var cur = 'threads';
+  var tabs = document.getElementById('tabs'), txt = document.getElementById('txt');
+  Object.keys(P).forEach(function(k){
+    var b = document.createElement('button'); b.type='button'; b.textContent = P[k].name;
+    if (k===cur) b.className='on';
+    b.addEventListener('click', function(){ cur=k; [].forEach.call(tabs.children, function(x){x.className='';}); b.className='on'; run(); });
+    tabs.appendChild(b);
+  });
+
+  var enc = new TextEncoder();
+  var EMOJI = /\p{Extended_Pictographic}/u;
+  function graphemes(s){
+    if (window.Intl && Intl.Segmenter) return Array.from(new Intl.Segmenter('zh-Hant',{granularity:'grapheme'}).segment(s), function(x){return x.segment;});
+    return Array.from(s);
+  }
+  function measure(s, mode){
+    if (mode==='bytes') return enc.encode(s).length;
+    if (mode==='threads') return graphemes(s).reduce(function(n,g){ return n + (EMOJI.test(g) ? enc.encode(g).length : 1); }, 0);
+    return graphemes(s).length;
+  }
+
+  // 容易出事的字眼：效果保證、醫療用語、絕對化用語（只列常見的，不是完整法規清單）
+  var RISK = [
+    ['保證','效果保證'],['100%','效果保證'],['百分之百','效果保證'],['一定會','效果保證'],['永久','效果保證'],['無效退費','效果保證'],['立即見效','效果保證'],
+    ['治療','醫療用語'],['治癒','醫療用語'],['根治','醫療用語'],['療效','醫療用語'],['消炎','醫療用語'],['抗發炎','醫療用語'],['改善失眠','醫療用語'],['減肥','醫療用語'],['瘦身','醫療用語'],['排毒','醫療用語'],['處方','醫療用語'],
+    ['第一名','絕對化'],['最有效','絕對化'],['唯一','絕對化'],['全台最','絕對化'],['零風險','絕對化'],['無副作用','絕對化']
+  ];
+  var HOOK_WORDS = ['為什麼','怎麼','如何','妳是不是','你是不是','有沒有','是不是','別再','不要再','其實','原來'];
+
+  function li(cls, head, body){
+    var l = document.createElement('li'); l.className = cls;
+    var b = document.createElement('b'); b.textContent = head; l.appendChild(b);
+    l.appendChild(document.createTextNode(body)); return l;
+  }
+
+  function run(){
+    var p = P[cur], s = txt.value;
+    var n = measure(s, p.mode);
+    document.getElementById('cnt').textContent = n.toLocaleString('zh-TW');
+    document.getElementById('lim').textContent = '／ ' + p.max.toLocaleString('zh-TW') + ' ' + p.unit + (p.mode==='threads' ? '（表情符號一個算好幾字）' : '');
+    var bar = document.getElementById('bar');
+    bar.style.width = Math.min(100, n / p.max * 100) + '%';
+    bar.className = n > p.max ? 'over' : '';
+
+    var out = document.getElementById('res'); out.textContent = '';
+    if (!s.trim()) { out.appendChild(li('', '', '貼上貼文就會開始檢查。')); return; }
+
+    // 1 字數
+    if (n > p.max) out.appendChild(li('bad','超過上限：', '多了 ' + (n - p.max).toLocaleString('zh-TW') + ' ' + p.unit + '，發不出去或會被截掉。'));
+    else if (p.soft && n > p.soft) out.appendChild(li('warn','字數：', '超過 ' + p.soft.toLocaleString('zh-TW') + ' 字。Apple 建立單集最多 ' + p.max.toLocaleString('zh-TW') + ' 字，但有一頁寫說明「可以到 4,000 字」，建議 4,000 字內比較保險；其他平台以該平台為準。'));
+    else out.appendChild(li('ok','字數：', '還剩 ' + (p.max - n).toLocaleString('zh-TW') + ' ' + p.unit + '。'));
+
+    // 2 連結與 utm
+    var urls = s.match(/https?:\/\/[^\s<>"')）]+/g) || [];
+    if (p.links && urls.length > p.links) out.appendChild(li('bad','連結太多：', '這裡最多 ' + p.links + ' 個，妳放了 ' + urls.length + ' 個。'));
+    var noUtm = urls.filter(function(u){ return !/[?&]utm_source=/.test(u); });
+    if (urls.length && noUtm.length) out.appendChild(li('warn','連結沒有追蹤碼：', noUtm.length + ' 個連結沒有 utm_source，之後在後台分不出客人是從這篇來的。可以用「追蹤連結產生器」做一個。'));
+    else if (urls.length) out.appendChild(li('ok','連結：', urls.length + ' 個，都有追蹤碼。'));
+
+    // 3 標籤
+    var tags = s.match(/#[^\s#.,，。!！?？&]+/g) || [];
+    if (cur==='threads' && tags.length > 1) out.appendChild(li('warn','主題標籤：', 'Threads 每篇只能標一個主題，妳寫了 ' + tags.length + ' 個，發出去只會有一個生效。'));
+    if (cur==='threads') tags.forEach(function(t){ if (t.length - 1 > 50) out.appendChild(li('bad','標籤太長：', t.slice(0,20) + '… 超過 50 字。')); });
+    if (p.tags && tags.length > p.tags) out.appendChild(li('bad','主題標籤太多：', '最多 ' + p.tags + ' 個，妳放了 ' + tags.length + ' 個，多的不會生效。'));
+    var ats = s.match(/@[A-Za-z0-9._]+/g) || [];
+    if (p.at && ats.length > p.at) out.appendChild(li('bad','@ 標註太多：', '最多 ' + p.at + ' 個，妳放了 ' + ats.length + ' 個。'));
+    if (p.noAngle && /[<>]/.test(s)) out.appendChild(li('bad','有「<」或「>」：', 'YouTube 說明欄不能有這兩個符號，請改成「〈〉」或刪掉。'));
+
+    // 4 字眼
+    var hits = {};
+    RISK.forEach(function(r){ if (s.indexOf(r[0]) > -1) (hits[r[1]] = hits[r[1]] || []).push(r[0]); });
+    var keys = Object.keys(hits);
+    if (keys.length) keys.forEach(function(k){ out.appendChild(li('warn', k + '：', '出現「' + hits[k].join('」「') + '」。如果是在說「不要這樣寫」就沒關係；如果是在形容自己的服務，建議改成描述過程或感受。')); });
+    else out.appendChild(li('ok','字眼：', '沒有看到常見的效果保證或醫療用語。'));
+
+    // 5 開頭
+    var first = (s.split(/\r?\n/).filter(function(x){ return x.trim(); })[0] || '').trim();
+    var firstLen = graphemes(first).length;
+    var hook = /[?？]/.test(first) || /\d/.test(first) || HOOK_WORDS.some(function(w){ return first.indexOf(w) > -1; });
+    if (firstLen > 40) out.appendChild(li('warn','第一行太長：', '第一行有 ' + firstLen + ' 字。大部分平台在「更多」之前只露一兩行，建議第一行 30 字以內。'));
+    if (!hook) out.appendChild(li('warn','開頭：', '第一行沒有問句、數字或轉折詞。試試用客人常問的一句話開頭，例如「妳是不是也…？」'));
+    else out.appendChild(li('ok','開頭：', '第一行有問句、數字或轉折，比較容易讓人停下來。'));
+  }
+  txt.addEventListener('input', run);
+  run();
+})();
+</script>
+</body>
+</html>

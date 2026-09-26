@@ -10,7 +10,7 @@ const fs = require('fs'), path = require('path');
 const args = process.argv.slice(2), arg = k => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : null; };
 const SKILLS = path.resolve(arg('--skills') || path.join(__dirname, '..', 'skills'));
 const OUT = path.resolve(arg('--out') || path.join(__dirname, 'one-click.html'));
-const VERSION = '0.3.0';
+const VERSION = '0.4.0';
 
 // 每個技能的卡片：白話標題、一句說明、2–4 個要老闆填的欄位（照各 SKILL.md「先問使用者」段設計）
 // long:true＝多行輸入框

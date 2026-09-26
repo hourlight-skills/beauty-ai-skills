@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>追蹤連結產生器（UTM）｜AI 小工具</title>
+<style>
+:root{--bg:#F0EEE9;--card:#fff;--ink:#3D3835;--mute:#6A6560;--rose:#7D4351;--teal:#007B7F;--orange:#E88A2C;--line:#DDD6CE;--ok:#1E7A4C;--bad:#B3261E}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.7}
+.wrap{max-width:900px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:1.6rem;margin:0 0 4px;color:var(--rose)}
+.sub{color:var(--mute);margin:0 0 18px}
+.card{background:var(--card);border-radius:18px;padding:20px;box-shadow:0 2px 10px rgba(125,67,81,.08);margin-bottom:18px}
+h2{font-size:1.05rem;margin:0 0 10px;color:var(--teal)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:0 18px}
+@media (max-width:720px){.grid{grid-template-columns:1fr}}
+label.f{display:block;font-weight:700;margin:12px 0 4px}
+label.f small{font-weight:400;color:var(--mute)}
+input[type=text],select{width:100%;font:inherit;padding:10px 12px;border:2px solid var(--line);border-radius:12px;background:#FFFCFA}
+input:focus,select:focus{outline:none;border-color:var(--teal)}
+input.err{border-color:var(--bad);background:#FDECEA}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.btn{font:inherit;font-weight:700;border:0;border-radius:999px;padding:10px 20px;cursor:pointer;background:var(--rose);color:#fff}
+.btn.ghost{background:#fff;color:var(--rose);border:2px solid var(--rose)}
+.btn.sm{padding:4px 12px;font-size:.85rem}
+.out{background:#F7F4F0;border-radius:12px;padding:14px;word-break:break-all;margin-top:12px;min-height:3em}
+.msg{font-weight:700;min-height:1.7em;color:var(--ok)}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--teal);font-size:.85rem}
+td.u{word-break:break-all;max-width:320px}
+.note{color:var(--mute);font-size:.85rem;margin-top:10px}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+footer{color:var(--mute);font-size:.8rem;margin-top:24px}
+.store-warn{display:none;background:#FDECEA;border-left:5px solid var(--bad);color:var(--bad);font-weight:700;border-radius:10px;padding:10px 14px;margin:0 0 18px}
+.store-warn.on{display:block}
+footer a{color:var(--teal);word-break:break-all}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>追蹤連結產生器（UTM）</h1>
+  <p class="store-warn" id="storeWarn" role="alert">這個瀏覽器現在存不了資料（可能是無痕模式或被設定擋掉）：關掉這一頁就會不見，離開前請先下載或複製。</p>
+  <p class="sub">每篇貼文放不同的追蹤連結，之後在 Google Analytics 就看得出客人是從哪一篇、哪個平台來的。連結只存在妳這台的瀏覽器，不會上傳。</p>
+
+  <div class="card">
+    <h2>① 填資料</h2>
+    <label class="f" for="url">要分享的網址</label>
+    <input type="text" id="url" placeholder="https://你的網站/價目表">
+    <div class="grid">
+      <div>
+        <label class="f" for="src">從哪裡來 <small>utm_source</small></label>
+        <select id="src">
+          <option value="threads">Threads（脆）</option><option value="instagram">Instagram</option><option value="facebook">臉書</option>
+          <option value="line">LINE</option><option value="youtube">YouTube</option><option value="podcast">Podcast</option>
+          <option value="newsletter">電子報</option><option value="other">其他（自己填）</option>
+        </select>
+        <input type="text" id="srcOther" placeholder="例：google_map" style="margin-top:6px;display:none" aria-label="自訂來源">
+      </div>
+      <div>
+        <label class="f" for="med">什麼形式 <small>utm_medium</small></label>
+        <select id="med">
+          <option value="social">一般貼文（social）</option><option value="paid_social">付費廣告（paid_social）</option>
+          <option value="bio">個人簡介連結（bio）</option><option value="message">私訊／群組（message）</option>
+          <option value="email">電子報（email）</option><option value="qr">實體 QR code（qr）</option>
+        </select>
+      </div>
+    </div>
+    <label class="f" for="camp">這是哪一檔活動 <small>utm_campaign</small></label>
+    <input type="text" id="camp" placeholder="例：winter_care 或 2026_12_holiday">
+    <label class="f" for="cont">哪一篇、哪個按鈕 <small>utm_content（可以不填）</small></label>
+    <input type="text" id="cont" placeholder="例：post_1205 或 story_button">
+    <div class="btns">
+      <button class="btn" type="button" id="make">產生連結</button>
+      <button class="btn ghost" type="button" id="copy">複製</button>
+      <button class="btn ghost" type="button" id="save">存進清單</button>
+    </div>
+    <div class="out" id="out">填好按「產生連結」。</div>
+    <div class="msg" id="msg"></div>
+    <p class="note">英文字會自動轉成小寫、空白變成底線——Google Analytics 會把大小寫不同的值當成兩個來源。</p>
+  </div>
+
+  <div class="card">
+    <h2>② 我的連結清單</h2>
+    <div style="overflow-x:auto"><table><thead><tr><th>日期</th><th>來源／形式</th><th>活動／篇</th><th>連結</th><th></th></tr></thead><tbody id="tb"></tbody></table></div>
+    <div class="btns"><button class="btn ghost" type="button" id="csv">下載成試算表（CSV）</button></div>
+    <p class="note">之後到 Google Analytics 的「流量開發」相關報表，看「工作階段來源／媒介」與「工作階段廣告活動」，就是這裡填的來源、形式、活動。報表名稱會隨 Google 改版調整，以妳看到的畫面為準。</p>
+  </div>
+
+  <footer>
+    參數說明（2026-09-26 查核）：Google 建議每個連結一定要有 utm_source、utm_medium、utm_campaign；參數值大小寫視為不同（<a href="https://support.google.com/analytics/answer/10917952?hl=zh-Hant" target="_blank" rel="noopener">Google Analytics 說明中心｜用網址收集廣告活動資料</a>）。清單存在這台瀏覽器（localStorage），清掉瀏覽器資料就會不見。
+  <br><span style="display:block;margin-top:8px">美業 AI 技能包 v0.4.0｜通用小工具｜<a href="index.html">回工具首頁</a>｜<a href="https://github.com/hourlight-skills/beauty-ai-skills/issues" target="_blank" rel="noopener">回報問題</a></span></footer>
+</div>
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var KEY = 'utm-link-builder-v1', list = [];
+  function warnStore(){ var w = document.getElementById('storeWarn'); if (w) w.classList.add('on'); }
+  try { localStorage.setItem('__probe', '1'); localStorage.removeItem('__probe'); } catch(e) { warnStore(); }
+  try { list = JSON.parse(localStorage.getItem(KEY) || '[]'); if (!Array.isArray(list)) list = []; } catch(e) { list = []; warnStore(); }
+  function clean(v){ return v.trim().toLowerCase().replace(/\s+/g, '_').replace(/[^\p{L}\p{N}_\-.]/gu, ''); }
+  $('src').addEventListener('change', function(){ $('srcOther').style.display = $('src').value === 'other' ? 'block' : 'none'; });
+  var built = null;
+  function build(){
+    var msg = $('msg'); built = null;
+    ['url','camp','srcOther'].forEach(function(id){ $(id).classList.remove('err'); });
+    var raw = $('url').value.trim();
+    if (raw && !/^https?:\/\//i.test(raw)) raw = 'https://' + raw;
+    var u; try { u = new URL(raw); } catch(e) { $('url').classList.add('err'); msg.style.color='var(--bad)'; msg.textContent = '網址看起來不完整，請貼整段（https:// 開頭）。'; return null; }
+    var src = $('src').value === 'other' ? clean($('srcOther').value) : $('src').value;
+    if (!src) { $('srcOther').classList.add('err'); msg.style.color='var(--bad)'; msg.textContent = '「從哪裡來」要填。'; return null; }
+    var camp = clean($('camp').value);
+    if (!camp) { $('camp').classList.add('err'); msg.style.color='var(--bad)'; msg.textContent = '「哪一檔活動」要填，Google 建議三個欄位都要有。'; return null; }
+    var cont = clean($('cont').value);
+    u.searchParams.set('utm_source', src);
+    u.searchParams.set('utm_medium', $('med').value);
+    u.searchParams.set('utm_campaign', camp);
+    if (cont) u.searchParams.set('utm_content', cont); else u.searchParams.delete('utm_content');
+    built = { date: new Date().toISOString().slice(0,10), src: src, med: $('med').value, camp: camp, cont: cont, url: u.toString() };
+    $('out').textContent = built.url;
+    msg.style.color='var(--ok)'; msg.textContent = '好了，可以複製或存進清單。';
+    return built;
+  }
+  function copyText(t, ok){
+    var msg = $('msg');
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(function(){ msg.style.color='var(--ok)'; msg.textContent = ok; }, function(){ msg.textContent = '瀏覽器不讓複製，請手動選取。'; });
+    else msg.textContent = '瀏覽器不讓複製，請手動選取。';
+  }
+  $('make').addEventListener('click', build);
+  $('copy').addEventListener('click', function(){ var b = build(); if (b) copyText(b.url, '已複製連結。'); });
+  $('save').addEventListener('click', function(){
+    var b = build(); if (!b) return;
+    if (list.some(function(x){ return x.url === b.url; })) { $('msg').textContent = '清單裡已經有這一條了。'; return; }
+    list.unshift(b); persist(); draw(); $('msg').textContent = '已存進清單。';
+  });
+  function persist(){ try { localStorage.setItem(KEY, JSON.stringify(list)); } catch(e) { warnStore(); } }
+  function draw(){
+    var tb = $('tb'); tb.textContent = '';
+    if (!list.length) { var tr = document.createElement('tr'); var td = document.createElement('td'); td.colSpan = 5; td.textContent = '還沒有存任何連結。'; tr.appendChild(td); tb.appendChild(tr); return; }
+    list.forEach(function(x, i){
+      var tr = document.createElement('tr');
+      [x.date, x.src + '／' + x.med, x.camp + (x.cont ? '／' + x.cont : ''), x.url].forEach(function(v, j){ var td = document.createElement('td'); td.textContent = v; if (j === 3) td.className = 'u'; tr.appendChild(td); });
+      var td = document.createElement('td');
+      var c = document.createElement('button'); c.type='button'; c.className='btn ghost sm'; c.textContent='複製'; c.addEventListener('click', function(){ copyText(x.url, '已複製連結。'); });
+      var d = document.createElement('button'); d.type='button'; d.className='btn ghost sm'; d.textContent='刪除'; d.style.marginTop='4px';
+      d.addEventListener('click', function(){ list.splice(i, 1); persist(); draw(); });
+      td.appendChild(c); td.appendChild(document.createElement('br')); td.appendChild(d); tr.appendChild(td); tb.appendChild(tr);
+    });
+  }
+  $('csv').addEventListener('click', function(){
+    if (!list.length) { $('msg').textContent = '清單是空的。'; return; }
+    var q = function(v){ v = String(v == null ? '' : v); if (/^[=+\-@\t\r\n]/.test(v)) v = "'" + v; return '"' + v.replace(/"/g,'""') + '"'; };
+    var t = ['日期','utm_source','utm_medium','utm_campaign','utm_content','連結'].map(q).join(',') + '\n' +
+      list.map(function(x){ return [x.date, x.src, x.med, x.camp, x.cont, x.url].map(q).join(','); }).join('\n');
+    var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + t], { type: 'text/csv;charset=utf-8' }));
+    a.download = '追蹤連結清單.csv'; document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  });
+  draw();
+})();
+</script>
+</body>
+</html>
